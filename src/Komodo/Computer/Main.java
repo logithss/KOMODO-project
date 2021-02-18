@@ -6,6 +6,8 @@
 package Komodo.Computer;
 
 
+import Komodo.Commun.Instruction;
+import Komodo.Commun.Instructions;
 import java.io.IOException;
 import java.util.Random;
 import javax.sound.sampled.AudioFormat;
@@ -21,7 +23,27 @@ import Komodo.Computer.Components.SystemBus;
 public class Main {
     
     public static void main(String[] args){
-        SystemBus systembus = new SystemBus();
-        systembus.powerOn();
+        //SystemBus systembus = new SystemBus();
+        //systembus.powerOn();
+        
+        byte a = -125;
+        byte b = 7;
+        
+        byte c = (byte)(a+b);
+        
+        System.out.println(c);
+        System.out.println(Byte.toUnsignedInt(c));
+        System.out.println( Integer.toBinaryString(Byte.toUnsignedInt(c)) );
+        
+        
+        //1098 -> 1098
+        //0000000000000000000110101 -> 10010010
+        //1000111 -> 1000111
+        
+        //wrong method
+        System.out.println( "wrong : "+Integer.toBinaryString((int)(c)) );
+        
+        //print the instruction table
+        Instructions.testTable();
     }
 }

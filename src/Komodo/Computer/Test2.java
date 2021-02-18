@@ -25,8 +25,7 @@ public class Test2 extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.systembus = new SystemBus();
-        this.systembus.run();
-        System.out.println("FFFFFFFFFFFXXXXXXXXXXXXXX");
+        //this.systembus.run();
         Button btn = new Button();
         btn.setText("Say 'Hello World'");
         btn.setOnAction(new EventHandler<ActionEvent>() {

@@ -19,6 +19,8 @@ public class Cpu extends Device implements Clockable{
     byte Y = 0;
     char programPointer = 0;
     byte stackPointer = 0;
+    
+    char argumentFetched = 0;
 
     public Cpu(SystemBus systemBus) {
         super(systemBus);
@@ -27,7 +29,46 @@ public class Cpu extends Device implements Clockable{
     @Override
     public void clock() {
         System.out.println("cpu code");
+        
+        /*step:
+        1:read instruction byte
+        2:look-up instruction
+        3:get argument from addressing mode
+        4:run instruction with argument
+        */
     }
+    
+    /*void implied()
+    {
+        //do nothing
+    }
+    
+    void immidiate()
+    {
+        //get byte and store it in value fetched
+    }
+    
+    void absolute()
+    {
+        //get the bytes,get value at that address
+    }
+    
+    void executeInstruction()
+    {
+        
+    }
+    
+    void executeInstruction2_immidiate()
+    {
+        
+    }
+    
+    void executeInstruction2_absolute()
+    {
+        
+    }*/
+    
+    
     
     
 }
