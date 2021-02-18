@@ -22,13 +22,14 @@ public class Cpu extends Device implements Clockable{
     
     char argumentFetched = 0;
 
-    public Cpu(SystemBus systemBus) {
-        super(systemBus);
+    public Cpu(SystemBus systembus) {
+        super(systembus);
     }
 
     @Override
     public void clock() {
-        System.out.println("cpu code");
+        //systembus.accessSystemClock().halt();
+        //System.out.println("cpu code");
         
         /*step:
         1:read instruction byte

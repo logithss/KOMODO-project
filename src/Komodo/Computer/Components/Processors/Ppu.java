@@ -15,14 +15,14 @@ import Komodo.Computer.Components.SystemBus;
  */
 public class Ppu extends Device implements Clockable{
     
-    public Ppu(SystemBus systemBus) {
-        super(systemBus);
+    public Ppu(SystemBus systembus) {
+        super(systembus);
     }
 
     @Override
     public void clock() {
-        System.out.println("ppu code");
-        this.systembus.accessSystemClock().halt();
+        //System.out.println("ppu code");
+        //this.systembus.accessSystemClock().halt();
     }
     
 }

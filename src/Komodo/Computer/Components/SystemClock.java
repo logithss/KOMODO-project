@@ -14,7 +14,7 @@ public class SystemClock extends Device{
     private boolean running;
     private boolean halted;
     
-    private int cycleCount = 0;
+    public long cycleCount = 0;
     
     public SystemClock(SystemBus systembus) {
         super(systembus);
@@ -28,13 +28,13 @@ public class SystemClock extends Device{
         
         while(running)
         {
-            System.out.println("***Clock Start***");
             if(!halted){
+                System.out.println("***Clock cycle***");
                 this.systembus.clock();
                 cycleCount++;
             }
             
-            System.out.println("***Clock End : "+cycleCount+" cycles executed***");
+            //System.out.println("***Clock End : "+cycleCount+" cycles executed***");
         }
     }
     

@@ -6,6 +6,7 @@
 package Komodo.Computer.Components.Processors;
 
 import Komodo.Computer.Components.Clockable;
+import Komodo.Computer.Components.Device;
 import Komodo.Computer.Components.Memory;
 import Komodo.Computer.Components.SystemBus;
 import java.util.Random;
@@ -20,13 +21,12 @@ import javax.sound.sampled.SourceDataLine;
  *
  * @author child
  */
-public class Apu extends Thread implements Clockable{
+public class Apu extends Device implements Runnable , Clockable{
     
-    SystemBus systembus;
-    
+    public boolean running = true;
     public Apu(SystemBus systembus)
     {
-        this.systembus = systembus;
+        super(systembus);
     }
     
     public void run(){
@@ -42,9 +42,9 @@ public class Apu extends Thread implements Clockable{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    public static void soundLoop() throws LineUnavailableException
+    public void soundLoop() throws LineUnavailableException
     {
-        int x = 0;
+        int x = -3;
         double vol = 0;
         /**/
         int[] song = {
@@ -94,54 +94,54 @@ public class Apu extends Thread implements Clockable{
         byte[] bufsum = new byte[ 1 ];
         AudioFormat af = new AudioFormat( (float )44100, 8, 1, true, false );
         SourceDataLine sdl = AudioSystem.getSourceDataLine( af );
-        while(true){
+        while(running){
             
-        sdl.open();
-        sdl.start();
-        for( int i = 0; i < 180 * (float )44100 / 1000; i++ ) {
-            
-      
-            double t;
-            if(x <= 78)
-                t = i/((float)44100/(frequency/2)) + phase;
-            else
-                t = i/((float)44100/(frequency/4)) + phase;
-            
-            double t2 = i/((float)44100/frequency) + phase;
-            
-            double t3;
-            t3 = i/((float)44100/(frequency/2)) + phase;
-            if(x >= 277)
-                vol = 1;
-            else
-                vol = 0;
-            
-            double value = 0;
-            double value2 = 0;
-            double value3 = 0;
-            double value4 = 0;
-            
-            //value = Math.sin(2 * Math.PI * t); //Sine
-            value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
-            value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
-            value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
+            sdl.open();
+            sdl.start();
+            for( int i = 0; i < 150 * (float )44100 / 1000; i++ ) {
 
-            bufsum[ 0 ] = (byte) (value*2 + value2*2 + value3*2 + value4*2 * vol);
-            
-            
-            sdl.write( bufsum, 0, 1 );
-        }
+
+                double t;
+                if(x <= 78)
+                    t = i/((float)44100/(frequency/2)) + phase;
+                else
+                    t = i/((float)44100/(frequency/4)) + phase;
+
+                double t2 = i/((float)44100/frequency) + phase;
+
+                double t3;
+                t3 = i/((float)44100/(frequency/2)) + phase;
+                if(x >= 277)
+                    vol = 1;
+                else
+                    vol = 0;
+
+                double value = 0;
+                double value2 = 0;
+                double value3 = 0;
+                double value4 = 0;
+
+                //value = Math.sin(2 * Math.PI * t); //Sine
+                value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
+                value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
+                value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
+
+                bufsum[ 0 ] = (byte) (value*2 + value2*2 + value3*2 + value4*2 * vol);
+
+
+                sdl.write( bufsum, 0, 1 );
+            }
         
-        x++;
-        if(x >= 0 && x < song.length){
-            frequency = song[x];
-        }
-        else if(x >= 0 && x > song.length)
-        {
-            x=0;
-            frequency = song[0];
-        }
-        
+            x++;
+            if(x >= 0 && x < song.length){
+                frequency = song[x];
+            }
+            else if(x >= 0 && x > song.length)
+            {
+                x=0;
+                frequency = song[0];
+            }
+
         }
     }
 }

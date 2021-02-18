@@ -6,11 +6,14 @@
 package Komodo.Computer;
 
 import Komodo.Computer.Components.SystemBus;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -20,35 +23,51 @@ import javafx.stage.Stage;
  */
 public class Test2 extends Application {
     
-    SystemBus systembus;
+    static SystemBus systembus;
+    private Stage window;
     
+    private AnimationTimer anim;
     @Override
     public void start(Stage primaryStage) {
-        this.systembus = new SystemBus();
-        //this.systembus.run();
-        Button btn = new Button();
-        btn.setText("Say 'Hello World'");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-            
+        window = primaryStage;
+        
+        Label label = new Label();
+        label.setText("cycles : ");
+        anim = new AnimationTimer() { //Game main loop
+
             @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Hello World!");
+            public void handle(long l) {
+                label.setText("cycles : "+Long.toString(systembus.accessSystemClock().cycleCount)+"\n memory at 52 : "+systembus.accessMemory().readAddress((char) 52));
             }
-        });
+        };
+        anim.start();
         
         StackPane root = new StackPane();
-        root.getChildren().add(btn);
+        root.getChildren().addAll(label);
         
         Scene scene = new Scene(root, 300, 250);
+        primaryStage.setOnCloseRequest(e -> {
+            e.consume();
+            closeApplication();
+        });
         primaryStage.setTitle("Hello World!");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+    
+    public void closeApplication() {
+        anim.stop();
+        window.close();
+        systembus.powerOff();
+    }
+
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        systembus = new SystemBus();
+        systembus.start();
         launch(args);
     }
     

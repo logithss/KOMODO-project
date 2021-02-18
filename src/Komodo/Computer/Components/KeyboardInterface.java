@@ -17,7 +17,7 @@ public class KeyboardInterface extends Device implements Clockable{
 
     @Override
     public void clock() {
-        System.out.println("keyboard interface code");
+        //System.out.println("keyboard interface code");
     }
     
 }
