@@ -24,6 +24,9 @@ public class Test2 extends Application {
     
     @Override
     public void start(Stage primaryStage) {
+        this.systembus = new SystemBus();
+        this.systembus.run();
+        System.out.println("FFFFFFFFFFFXXXXXXXXXXXXXX");
         Button btn = new Button();
         btn.setText("Say 'Hello World'");
         btn.setOnAction(new EventHandler<ActionEvent>() {
@@ -40,9 +43,6 @@ public class Test2 extends Application {
         Scene scene = new Scene(root, 300, 250);
         primaryStage.setTitle("Hello World!");
         primaryStage.setScene(scene);
-        
-        this.systembus = new SystemBus();
-        this.systembus.powerOn();
         primaryStage.show();
     }
 

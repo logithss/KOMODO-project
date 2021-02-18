@@ -8,7 +8,7 @@ import Komodo.Computer.Components.Processors.Cpu;
  *
  * @author child
  */
-public class SystemBus implements Clockable{
+public class SystemBus extends Thread implements Clockable{
     
     private Memory memory;
     private Cpu cpu;
@@ -26,6 +26,10 @@ public class SystemBus implements Clockable{
         //this.apu = new Apu(this);
         this.keyboardInterface = new KeyboardInterface(this);
         this.systemClock = new SystemClock(this);
+    }
+    
+    public void run(){
+        powerOn();
     }
     
     public void powerOn()

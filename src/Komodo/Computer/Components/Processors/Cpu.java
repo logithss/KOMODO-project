@@ -14,12 +14,11 @@ import Komodo.Computer.Components.SystemBus;
  * @author child
  */
 public class Cpu extends Device implements Clockable{
-    static char accumulatorA = 0;
-    static char accumulatorB = 0;
-    static char registerX = 0;
-    
-    static char programPointer = 0;
-    static char stackPointer = 0;
+    byte A = 0;
+    byte X = 0;
+    byte Y = 0;
+    char programPointer = 0;
+    byte stackPointer = 0;
 
     public Cpu(SystemBus systemBus) {
         super(systemBus);
