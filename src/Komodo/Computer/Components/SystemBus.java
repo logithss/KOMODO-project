@@ -26,6 +26,7 @@ public class SystemBus extends Thread implements Clockable{
         this.ppu = new Ppu(this);
         //apu initialisation
         apu = new Apu(this);
+        //apu.start();
         apuThread = new Thread(apu);
         
         this.keyboardInterface = new KeyboardInterface(this);
@@ -47,7 +48,7 @@ public class SystemBus extends Thread implements Clockable{
     public void powerOff()
     {
         apu.running =  false;
-        this.systemClock.stop();
+        this.systemClock.running = false;
     }
     
     public void reset()

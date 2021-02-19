@@ -29,7 +29,8 @@ public class Cpu extends Device implements Clockable{
     @Override
     public void clock() {
         //systembus.accessSystemClock().halt();
-        //System.out.println("cpu code");
+        //int a = 1+1;
+        //System.out.println("");
         
         /*step:
         1:read instruction byte

@@ -11,7 +11,7 @@ package Komodo.Computer.Components;
  */
 public class SystemClock extends Device{
     
-    private boolean running;
+    public boolean running;
     private boolean halted;
     
     public long cycleCount = 0;
@@ -29,7 +29,7 @@ public class SystemClock extends Device{
         while(running)
         {
             if(!halted){
-                System.out.println("***Clock cycle***");
+                //System.out.println("***Clock cycle***");
                 this.systembus.clock();
                 cycleCount++;
             }

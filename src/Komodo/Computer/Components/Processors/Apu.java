@@ -45,7 +45,7 @@ public class Apu extends Device implements Runnable , Clockable{
     public void soundLoop() throws LineUnavailableException
     {
         int x = -3;
-        double vol = 0;
+        double vol = 1;
         /**/
         int[] song = {
         659, 659, 0, 659, 0, 523, 659, 0, 784, 0, 0, 0, 392, 0, 0, 0, 523, 0, 0, 392, 0, 0, 330, 0, //1
@@ -94,12 +94,14 @@ public class Apu extends Device implements Runnable , Clockable{
         byte[] bufsum = new byte[ 1 ];
         AudioFormat af = new AudioFormat( (float )44100, 8, 1, true, false );
         SourceDataLine sdl = AudioSystem.getSourceDataLine( af );
+        
+        Random rng = new Random();
+        
         while(running){
             
             sdl.open();
             sdl.start();
             for( int i = 0; i < 150 * (float )44100 / 1000; i++ ) {
-
 
                 double t;
                 if(x <= 78)
@@ -111,27 +113,45 @@ public class Apu extends Device implements Runnable , Clockable{
 
                 double t3;
                 t3 = i/((float)44100/(frequency/2)) + phase;
-                if(x >= 277)
+                /*if(x >= 277)
                     vol = 1;
                 else
-                    vol = 0;
+                    vol = 0;*/
+                //vol = 2;
+                if(x%2 == 0){
+                    if(i > (150*44100/1000)/6)
+                        vol -= 0.0001*2;
+                    else
+                        vol = 2;
+                }
+                else
+                {
+                    if(i < (150*44100/1000)/7)
+                        vol = 1;
+                    else
+                        vol = 0;
+                }
 
                 double value = 0;
                 double value2 = 0;
                 double value3 = 0;
                 double value4 = 0;
+                double value5 = 0;
 
                 //value = Math.sin(2 * Math.PI * t); //Sine
                 value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
                 value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
                 value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
-
-                bufsum[ 0 ] = (byte) (value*2 + value2*2 + value3*2 + value4*2 * vol);
-
-
+                if(rng.nextBoolean() == true)
+                    value5 = (byte) ((byte)1);
+                else
+                    value5 = 0;
+                
+                bufsum[ 0 ] = (byte) (value+value2+value3+value4+value5*vol);
+                
                 sdl.write( bufsum, 0, 1 );
             }
-        
+            vol = 1;
             x++;
             if(x >= 0 && x < song.length){
                 frequency = song[x];

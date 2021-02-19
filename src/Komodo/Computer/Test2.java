@@ -8,6 +8,7 @@ package Komodo.Computer;
 import Komodo.Computer.Components.SystemBus;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -37,7 +38,7 @@ public class Test2 extends Application {
 
             @Override
             public void handle(long l) {
-                label.setText("cycles : "+Long.toString(systembus.accessSystemClock().cycleCount)+"\n memory at 52 : "+systembus.accessMemory().readAddress((char) 52));
+                label.setText("cycles : "+Long.toString(systembus.accessSystemClock().cycleCount)+"\n clock running : "+Boolean.toString(systembus.accessSystemClock().running));
             }
         };
         anim.start();
@@ -56,9 +57,13 @@ public class Test2 extends Application {
     }
     
     public void closeApplication() {
-        anim.stop();
-        window.close();
-        systembus.powerOff();
+        //System.exit(0);
+        //systembus.powerOff();
+        systembus.accessSystemClock().running=false;
+        //anim.stop();
+        //window.close();
+        //System.gc();
+        Platform.exit();
     }
 
 
