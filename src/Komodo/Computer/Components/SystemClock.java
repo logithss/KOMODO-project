@@ -5,53 +5,31 @@
  */
 package Komodo.Computer.Components;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  *
  * @author child
  */
-public class SystemClock extends Device{
+public class SystemClock extends Clock{
+
+    public ArrayList<Clockable> clockablesList = new ArrayList<>();
     
-    public boolean running;
-    private boolean halted;
-    
-    public long cycleCount = 0;
-    
-    public SystemClock(SystemBus systembus) {
-        super(systembus);
-        enable();
+    public SystemClock() {
+        super();
     }
     
-    public void start()
-    {
-        this.running = true;
-        this.halted = false;
-        
-        while(running)
+    public SystemClock(Clockable... clockables) {
+        clockablesList.addAll(Arrays.asList(clockables));
+    }
+
+    @Override
+    public void clockCycle() {
+        for(Clockable c : clockablesList)
         {
-            if(!halted){
-                //System.out.println("***Clock cycle***");
-                this.systembus.clock();
-                cycleCount++;
-            }
-            
-            //System.out.println("***Clock End : "+cycleCount+" cycles executed***");
+            c.clock();
+            //System.out.println(c.toString());
         }
     }
-    
-    public void halt()
-    {
-        this.halted = true;
-    }
-    
-    public void stop()
-    {
-        this.running = false;
-    }
-    
-    public void enable()
-    {
-        this.running = true;
-        this.halted = false;
-    }
-    
 }

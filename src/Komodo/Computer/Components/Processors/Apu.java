@@ -21,30 +21,9 @@ import javax.sound.sampled.SourceDataLine;
  *
  * @author child
  */
-public class Apu extends Device implements Runnable , Clockable{
+public class Apu extends Device implements Clockable{
     
-    public boolean running = true;
-    public Apu(SystemBus systembus)
-    {
-        super(systembus);
-    }
-    
-    public void run(){
-        try {
-            soundLoop();
-        } catch (LineUnavailableException ex) {
-            Logger.getLogger(Apu.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @Override
-    public void clock() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    public void soundLoop() throws LineUnavailableException
-    {
-        int x = -3;
+    int x = -3;
         double vol = 1;
         /**/
         int[] song = {
@@ -93,11 +72,24 @@ public class Apu extends Device implements Runnable , Clockable{
         
         byte[] bufsum = new byte[ 1 ];
         AudioFormat af = new AudioFormat( (float )44100, 8, 1, true, false );
-        SourceDataLine sdl = AudioSystem.getSourceDataLine( af );
+        
+    public Apu(SystemBus systembus)
+    {
+        super(systembus);
+    }
+
+    @Override
+    public void clock() {
+        //soundLoop();
+        //System.out.println("apu");
+    }
+    
+    public void soundLoop()
+    {
+        try {
+            SourceDataLine sdl = AudioSystem.getSourceDataLine( af );
         
         Random rng = new Random();
-        
-        while(running){
             
             sdl.open();
             sdl.start();
@@ -150,7 +142,7 @@ public class Apu extends Device implements Runnable , Clockable{
                 bufsum[ 0 ] = (byte) (value+value2+value3+value4+value5*vol);
                 
                 sdl.write( bufsum, 0, 1 );
-            }
+                
             vol = 1;
             x++;
             if(x >= 0 && x < song.length){
@@ -162,6 +154,9 @@ public class Apu extends Device implements Runnable , Clockable{
                 frequency = song[0];
             }
 
+        }
+        } catch (LineUnavailableException ex) {
+            Logger.getLogger(Apu.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

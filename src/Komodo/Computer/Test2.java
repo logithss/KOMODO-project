@@ -59,7 +59,7 @@ public class Test2 extends Application {
     public void closeApplication() {
         //System.exit(0);
         //systembus.powerOff();
-        systembus.accessSystemClock().running=false;
+        systembus.powerOff();
         //anim.stop();
         //window.close();
         //System.gc();
@@ -72,7 +72,7 @@ public class Test2 extends Application {
      */
     public static void main(String[] args) {
         systembus = new SystemBus();
-        systembus.start();
+        systembus.powerOn();
         launch(args);
     }
     

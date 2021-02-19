@@ -8,29 +8,28 @@ import Komodo.Computer.Components.Processors.Cpu;
  *
  * @author child
  */
-public class SystemBus extends Thread implements Clockable{
+public class SystemBus implements Clockable{
     
     private Memory memory;
     private Cpu cpu;
     private Ppu ppu;
     private Apu apu;
-    private Thread apuThread;
-    private KeyboardInterface keyboardInterface;
+    private KeyboardScanner keyboardInterface;
     
-    SystemClock systemClock;
+    private SystemClock systemClock;
+    private SystemClock apuClock;
     
     public SystemBus()
     {
         this.memory = new Memory(this);
         this.cpu = new Cpu(this);
         this.ppu = new Ppu(this);
-        //apu initialisation
-        apu = new Apu(this);
-        //apu.start();
-        apuThread = new Thread(apu);
+        this.apu = new Apu(this);
+        this.keyboardInterface = new KeyboardScanner(this);
+        //clocks
         
-        this.keyboardInterface = new KeyboardInterface(this);
-        this.systemClock = new SystemClock(this);
+        systemClock = new SystemClock(this);
+        apuClock = new SystemClock(apu);
     }
     
     public void run(){
@@ -40,15 +39,15 @@ public class SystemBus extends Thread implements Clockable{
     public void powerOn()
     {
         reset();
-        //apuThread.start();
+        this.apuClock.start();
         this.systemClock.start();
-        System.out.println("end?");
+        //System.out.println("end?");
     }
     
     public void powerOff()
     {
-        apu.running =  false;
-        this.systemClock.running = false;
+        apuClock.stopClock();
+        systemClock.stopClock();
     }
     
     public void reset()
@@ -58,13 +57,11 @@ public class SystemBus extends Thread implements Clockable{
     
     @Override
     public void clock() {
-        //System.out.println("aaa");
-        //System.out.println("running");
         this.cpu.clock();
         this.ppu.clock();
         this.keyboardInterface.clock();
     }
     
     public Memory accessMemory() {return this.memory;}
-    public SystemClock accessSystemClock() {return this.systemClock;}
+    public Clock accessSystemClock() {return this.systemClock;}
 }

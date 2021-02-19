@@ -9,9 +9,9 @@ package Komodo.Computer.Components;
  *
  * @author child
  */
-public class KeyboardInterface extends Device implements Clockable{
+public class KeyboardScanner extends Device implements Clockable{
     
-    public KeyboardInterface(SystemBus systemBus) {
+    public KeyboardScanner(SystemBus systemBus) {
         super(systemBus);
     }
 
