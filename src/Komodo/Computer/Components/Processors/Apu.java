@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *///https://stackoverflow.com/questions/26265575/playing-multiple-byte-arrays-simultaneously-in-java
 package Komodo.Computer.Components.Processors;
 
 import Komodo.Computer.Components.Clockable;
@@ -23,8 +18,9 @@ import javax.sound.sampled.SourceDataLine;
  */
 public class Apu extends Device implements Clockable{
     
-    int x = -3;
-        double vol = 1;
+    public int x = -3;
+        double vol = 6;
+        public double noiseValue = 1;
         /**/
         int[] song = {
         659, 659, 0, 659, 0, 523, 659, 0, 784, 0, 0, 0, 392, 0, 0, 0, 523, 0, 0, 392, 0, 0, 330, 0, //1
@@ -64,99 +60,105 @@ public class Apu extends Device implements Clockable{
         523, 0, 0, 392, 0, 0, 330, 0, 0, 440, 0, 494, 0, 440, 0, 415, 0, 466, 0, 415, 415, 
         392, 392, 392, 392, 392, 392, 0, 262, 0, 0, 0, 0, 0 //5
         };
-        
+       SourceDataLine sdl; 
 
         int frequency = 0;
         int phase = 0;
         float pulseWidth = 0.05f;
         
         byte[] bufsum = new byte[ 1 ];
-        AudioFormat af = new AudioFormat( (float )44100, 8, 1, true, false );
+        AudioFormat af;
         
     public Apu(SystemBus systembus)
     {
         super(systembus);
+        try{
+        af = new AudioFormat( (float )44100, 8, 1, true, false );
+        sdl = AudioSystem.getSourceDataLine( af );
+        sdl.open();
+        sdl.start();
+        }
+        catch(LineUnavailableException e)
+        {
+            System.out.println(e);
+        }
     }
 
     @Override
     public void clock() {
-        //soundLoop();
+        soundLoop();
         //System.out.println("apu");
     }
     
     public void soundLoop()
     {
-        try {
-            SourceDataLine sdl = AudioSystem.getSourceDataLine( af );
-        
+        //System.out.println("new music note : "+x);
         Random rng = new Random();
+        for( int i = 0; i < 50 * (float )44100 / 1000; i++ ) {
             
-            sdl.open();
-            sdl.start();
-            for( int i = 0; i < 150 * (float )44100 / 1000; i++ ) {
-
-                double t;
-                if(x <= 78)
-                    t = i/((float)44100/(frequency/2)) + phase;
-                else
-                    t = i/((float)44100/(frequency/4)) + phase;
-
-                double t2 = i/((float)44100/frequency) + phase;
-
-                double t3;
-                t3 = i/((float)44100/(frequency/2)) + phase;
-                /*if(x >= 277)
-                    vol = 1;
-                else
-                    vol = 0;*/
-                //vol = 2;
-                if(x%2 == 0){
-                    if(i > (150*44100/1000)/6)
-                        vol -= 0.0001*2;
-                    else
-                        vol = 2;
+            double t;
+            if(x <= 78)
+                t = i/((float)44100/(frequency/2)) + phase;
+            else
+                t = i/((float)44100/(frequency/4)) + phase;
+            
+            double t2 = i/((float)44100/frequency) + phase;
+            
+            double t3;
+            t3 = i/((float)44100/(frequency/2)) + phase;
+            /*if(x >= 277)
+            vol = 1;
+            else
+            vol = 0;*/
+            //vol = 2;
+            if(x%2 == 0){
+                if(i > (50*44100/1000)/50){
+                    vol -= 0.001889;
+                    //vol = 1;
+                    //noiseValue = 200;
                 }
                 else
                 {
-                    if(i < (150*44100/1000)/7)
-                        vol = 1;
-                    else
-                        vol = 0;
+                    vol = 5;
+                    //noiseValue = 1;
                 }
-
-                double value = 0;
-                double value2 = 0;
-                double value3 = 0;
-                double value4 = 0;
-                double value5 = 0;
-
-                //value = Math.sin(2 * Math.PI * t); //Sine
-                value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
-                value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
-                value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
-                if(rng.nextBoolean() == true)
-                    value5 = (byte) ((byte)1);
-                else
-                    value5 = 0;
-                
-                bufsum[ 0 ] = (byte) (value+value2+value3+value4+value5*vol);
-                
-                sdl.write( bufsum, 0, 1 );
-                
-            vol = 1;
-            x++;
-            if(x >= 0 && x < song.length){
-                frequency = song[x];
             }
-            else if(x >= 0 && x > song.length)
+            else
             {
-                x=0;
-                frequency = song[0];
+                vol = 0;
+                //noiseValue = 1;
+                /*
+                if(i < (500*44100/1000)/7)
+                    vol = 1;
+                else
+                    vol = 0;
+*/
             }
-
+            
+            double value = 0;
+            double value2 = 0;
+            double value3 = 0;
+            double value4 = 0;
+            double value5 = 0;
+            
+            //value = Math.sin(2 * Math.PI * t); //Sine
+            //value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
+            //value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
+            //value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
+            if(x%3 ==0){if(i%noiseValue == 0){if(rng.nextBoolean() == true) value5 = (byte) ((byte)1); else value5 = 0;}}else{value5 = 0; }
+            
+            bufsum[ 0 ] = (byte) (value+value2+value3+value4*vol+value5*vol);
+            
+            sdl.write( bufsum, 0, 1 );
         }
-        } catch (LineUnavailableException ex) {
-            Logger.getLogger(Apu.class.getName()).log(Level.SEVERE, null, ex);
+        x++;
+        if(x >= 0 && x < song.length){
+            frequency = song[x];
+        }
+        else if(x >= 0 && x > song.length)
+        {
+            x=0;
+            frequency = song[0];
         }
     }
 }

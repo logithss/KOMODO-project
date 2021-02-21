@@ -9,13 +9,18 @@ import Komodo.Computer.Components.SystemBus;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -34,17 +39,47 @@ public class Test2 extends Application {
         
         Label label = new Label();
         label.setText("cycles : ");
+        
+        Slider slider = new Slider();
+         
+        // The minimum value.
+        slider.setMin(1);
+         
+        // The maximum value.
+        slider.setMax(200);
+         
+        // Current value
+        slider.setValue(1);
+         
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+         
+        slider.setBlockIncrement(10);
+        
+        slider.valueProperty().addListener(new ChangeListener<Number>() {
+ 
+         @Override
+         public void changed(ObservableValue<? extends Number> observable, //
+               Number oldValue, Number newValue) {
+ 
+            systembus.apu.noiseValue = newValue.intValue();
+         }
+      });
+ 
+        VBox root = new VBox();
+        root.setPadding(new Insets(20));
+        root.setSpacing(10);
+        root.getChildren().addAll(label, slider);
+        
         anim = new AnimationTimer() { //Game main loop
 
             @Override
             public void handle(long l) {
-                label.setText("cycles : "+Long.toString(systembus.accessSystemClock().cycleCount)+"\n clock running : "+Boolean.toString(systembus.accessSystemClock().running));
+                label.setText("cycles : "+Long.toString(systembus.accessSystemClock().cycleCount)+"\nClock running : "+Boolean.toString(systembus.accessSystemClock().running)
+                +"\nApu song pointer at : "+systembus.apu.x);
             }
         };
         anim.start();
-        
-        StackPane root = new StackPane();
-        root.getChildren().addAll(label);
         
         Scene scene = new Scene(root, 300, 250);
         primaryStage.setOnCloseRequest(e -> {

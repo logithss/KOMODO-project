@@ -13,8 +13,8 @@ public class SystemBus implements Clockable{
     private Memory memory;
     private Cpu cpu;
     private Ppu ppu;
-    private Apu apu;
-    private KeyboardScanner keyboardInterface;
+    public Apu apu;
+    private KeyboardScanner keyboardScanner;
     
     private SystemClock systemClock;
     private SystemClock apuClock;
@@ -25,7 +25,7 @@ public class SystemBus implements Clockable{
         this.cpu = new Cpu(this);
         this.ppu = new Ppu(this);
         this.apu = new Apu(this);
-        this.keyboardInterface = new KeyboardScanner(this);
+        this.keyboardScanner = new KeyboardScanner(this);
         //clocks
         
         systemClock = new SystemClock(this);
@@ -39,7 +39,7 @@ public class SystemBus implements Clockable{
     public void powerOn()
     {
         reset();
-        this.apuClock.start();
+        //this.apuClock.start();
         this.systemClock.start();
         //System.out.println("end?");
     }
@@ -59,7 +59,7 @@ public class SystemBus implements Clockable{
     public void clock() {
         this.cpu.clock();
         this.ppu.clock();
-        this.keyboardInterface.clock();
+        this.keyboardScanner.clock();
     }
     
     public Memory accessMemory() {return this.memory;}

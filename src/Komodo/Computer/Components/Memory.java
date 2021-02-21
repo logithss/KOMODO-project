@@ -5,6 +5,8 @@
  */
 package Komodo.Computer.Components;
 
+import Komodo.Commun.NumberUtility;
+
 /**
  *
  * @author child
@@ -17,7 +19,7 @@ public class Memory extends Device{
         super(systemBus);
     }
     
-    public byte readAddress(char address)
+    public byte readByte(char address)
     {
         try
         {
@@ -33,7 +35,23 @@ public class Memory extends Device{
         }
     }
     
-    public boolean writeValue(char address, byte value)
+    public char readWord(char address)
+    {
+        try
+        {
+            return NumberUtility.bytesToChar(memory[address], memory[address+1]);
+        }
+        catch(ArrayIndexOutOfBoundsException e)
+        {
+            throw new ArrayIndexOutOfBoundsException("Address '"+Integer.toHexString(address)+"' is out of memory range");
+        }
+        catch(NullPointerException e)
+        {
+            throw new NullPointerException("Address '"+Integer.toHexString(address)+"' is undefined");
+        }
+    }
+    
+    public boolean writeByte(char address, byte value)
     {
         try
         {
@@ -46,4 +64,31 @@ public class Memory extends Device{
         }
     }
     
+    public boolean writeWord(char address, byte highValue, byte lowValue)
+    {
+        try
+        {         
+            memory[address] = highValue;
+            memory[address+1] = lowValue;
+            return true;
+        }
+        catch(ArrayIndexOutOfBoundsException | NullPointerException e)
+        {
+            return false;
+        }
+    }
+    
+    public boolean writeWord(char address, char value)
+    {
+        try
+        {
+            memory[address] = (byte) ((value&0xff00)>>8);
+            memory[address+1] = (byte) (value&0x00ff);
+            return true;
+        }
+        catch(ArrayIndexOutOfBoundsException | NullPointerException e)
+        {
+            return false;
+        }
+    }
 }
