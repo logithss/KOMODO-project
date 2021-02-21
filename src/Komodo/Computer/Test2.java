@@ -108,11 +108,7 @@ public class Test2 extends Application {
      */
     public static void main(String[] args) {
         systembus = new SystemBus();
-        //systembus.powerOn();
-        byte[] bytes = NumberUtility.wordToBytes((char)0xfa62);
-        System.out.println("high: "+ Integer.toHexString(Byte.toUnsignedInt(bytes[0]))+"; low: "+ Integer.toHexString(Byte.toUnsignedInt(bytes[1])));
-        char word = NumberUtility.bytesToWord((byte) 0xcf, (byte) 0xf6);
-        System.out.println("bytes to word: "+ Integer.toHexString(word) );
+        systembus.powerOn();
         launch(args);
     }
     
