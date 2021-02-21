@@ -11,8 +11,18 @@ package Komodo.Commun;
  */
 public class NumberUtility {
     
-    public static char bytesToChar(byte highByte, byte lowByte) //combine two bytes into one char
+    public static char bytesToWord(byte highByte, byte lowByte) //combine two bytes into one char
     {
         return ( (char)((Byte.toUnsignedInt(highByte)<<8) | Byte.toUnsignedInt(lowByte)) );
+    }
+    
+    public static byte[] wordToBytes(char word) //combine two bytes into one char
+    {
+        byte[] bytes = new byte[2];
+        //System.out.println("byte high after shift: "+ ((word>>8)&0xff) );
+        bytes[0] = (byte)((word>>8)&0xff);
+        //System.out.println( "print: "+Integer.toHexString(Byte.toUnsignedInt(bytes[0])));
+        bytes[1] = (byte)((word)&0xff);
+        return bytes;
     }
 }

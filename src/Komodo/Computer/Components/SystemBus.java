@@ -14,7 +14,7 @@ public class SystemBus implements Clockable{
     private Cpu cpu;
     private Ppu ppu;
     public Apu apu;
-    private KeyboardScanner keyboardScanner;
+    private KeyScanner keyboardScanner;
     
     private SystemClock systemClock;
     private SystemClock apuClock;
@@ -25,7 +25,7 @@ public class SystemBus implements Clockable{
         this.cpu = new Cpu(this);
         this.ppu = new Ppu(this);
         this.apu = new Apu(this);
-        this.keyboardScanner = new KeyboardScanner(this);
+        this.keyboardScanner = new KeyScanner(this);
         //clocks
         
         systemClock = new SystemClock(this);

@@ -19,6 +19,7 @@ public class Memory extends Device{
         super(systemBus);
     }
     
+    //read value at address
     public byte readByte(char address)
     {
         try
@@ -35,11 +36,12 @@ public class Memory extends Device{
         }
     }
     
+    //read word at address(byte at address + byte at address+1)
     public char readWord(char address)
     {
         try
         {
-            return NumberUtility.bytesToChar(memory[address], memory[address+1]);
+            return NumberUtility.bytesToWord(memory[address], memory[address+1]);
         }
         catch(ArrayIndexOutOfBoundsException e)
         {
@@ -51,6 +53,7 @@ public class Memory extends Device{
         }
     }
     
+    //write byte at address
     public boolean writeByte(char address, byte value)
     {
         try
@@ -64,6 +67,7 @@ public class Memory extends Device{
         }
     }
     
+    //write the two bytes one after another from the address
     public boolean writeWord(char address, byte highValue, byte lowValue)
     {
         try
@@ -78,6 +82,7 @@ public class Memory extends Device{
         }
     }
     
+    //same, but takes a char
     public boolean writeWord(char address, char value)
     {
         try
