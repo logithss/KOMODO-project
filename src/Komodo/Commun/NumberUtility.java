@@ -25,4 +25,9 @@ public class NumberUtility {
         bytes[1] = (byte)((word)&0xff);
         return bytes;
     }
+    
+    public static byte getUnsignedByte(int number)
+    {
+        return (byte)number;
+    }
 }
