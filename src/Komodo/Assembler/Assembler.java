@@ -7,6 +7,7 @@ package Komodo.Assembler;
 
 import java.io.*;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -16,6 +17,9 @@ import java.util.Scanner;
 public class Assembler {
 
     public void start() {
+        
+        ArrayList<String> labels = new ArrayList<>(); 
+        
 
         try {
             File file = new File("resources\\AssemblyFile.txt");
@@ -23,7 +27,20 @@ public class Assembler {
 
             while (scan.hasNext()) {
                 
-                System.out.println(scan.nextLine());
+                String line = scan.nextLine();
+                
+                
+                if (line.startsWith(";")) {
+                    scan.skip(line);
+                } else if (line.startsWith(":")) {
+                    String label = line;
+                    labels.add(line);
+
+                }
+                
+                
+                
+                
 
             }
 
