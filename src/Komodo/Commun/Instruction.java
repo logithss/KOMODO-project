@@ -21,5 +21,5 @@ public class Instruction {
         this.addressingMode = addressingMode;
     }
     
-    public enum AddressingMode {IMPLIED, IMMEDIATE, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDIRECT, INDIRECT_X};
+    public static enum AddressingMode {IMPLIED, IMMEDIATE, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDIRECT, INDIRECT_X};
 }
