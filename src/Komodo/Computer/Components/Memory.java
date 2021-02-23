@@ -21,7 +21,7 @@ public class Memory extends Device{
         memory[1] = 1;
         memory[2] = 9;
         memory [3] = 13;
-        memory[5] = NumberUtility.getUnsignedByte(177);
+        memory[5] = 5;
     }
     
     //read value at address

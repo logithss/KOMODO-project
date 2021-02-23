@@ -38,6 +38,7 @@ public class Cpu extends Device implements Clockable{
         */
         
         byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
+        System.out.println((int)pc+" : "+OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
         //fetching argument from memory
         switch(instruction.addressingMode){
@@ -97,6 +98,7 @@ public class Cpu extends Device implements Clockable{
     private void nop()
     {
         //dont do anything and move on to the next cycle
+        System.out.println("NOP!!!");
     }
     
     private void add()

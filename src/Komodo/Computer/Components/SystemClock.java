@@ -16,11 +16,12 @@ public class SystemClock extends Clock{
 
     public ArrayList<Clockable> clockablesList = new ArrayList<>();
     
-    public SystemClock() {
-        super();
+    public SystemClock(String name) {
+        super(name);
     }
     
-    public SystemClock(Clockable... clockables) {
+    public SystemClock(String name, Clockable... clockables) {
+        super(name);
         clockablesList.addAll(Arrays.asList(clockables));
     }
 

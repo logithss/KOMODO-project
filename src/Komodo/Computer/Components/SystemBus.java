@@ -28,8 +28,8 @@ public class SystemBus implements Clockable{
         this.keyboardScanner = new KeyScanner(this);
         //clocks
         
-        systemClock = new SystemClock(this);
-        apuClock = new SystemClock(apu);
+        systemClock = new SystemClock("System Clock", this);
+        apuClock = new SystemClock("APU Clock", apu);
     }
     
     public void run(){
@@ -40,7 +40,7 @@ public class SystemBus implements Clockable{
     {
         reset();
         //this.apuClock.start();
-        this.systemClock.start();
+        //this.systemClock.start();
         //System.out.println("end?");
     }
     

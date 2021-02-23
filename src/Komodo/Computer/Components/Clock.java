@@ -15,8 +15,8 @@ public abstract class Clock extends Thread implements Runnable{
     private boolean halted;
     public long cycleCount = 0;
     
-    public Clock() {
-        resume();
+    public Clock(String name) {
+        this.setName(name);
     }
     
     public void run(){
