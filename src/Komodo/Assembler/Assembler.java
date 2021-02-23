@@ -5,10 +5,25 @@
  */
 package Komodo.Assembler;
 
+import java.io.*;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 /**
  *
  * @author child
  */
 public class Assembler {
+    
+    private void start(){
+        
+        
+        try {
+           
+        } catch (Exception e) {
+        }
+        
+    }
+    
     
 }
