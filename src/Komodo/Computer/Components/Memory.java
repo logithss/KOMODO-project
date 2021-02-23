@@ -13,10 +13,15 @@ import Komodo.Commun.NumberUtility;
  */
 public class Memory extends Device{
     
-    private byte[] memory = new byte[0xFFFF];
+    private byte[] memory;
 
     public Memory(SystemBus systemBus) {
         super(systemBus);
+        memory = new byte[0xFFFF];
+        memory[1] = 1;
+        memory[2] = 9;
+        memory [3] = 13;
+        memory[5] = NumberUtility.getUnsignedByte(177);
     }
     
     //read value at address
