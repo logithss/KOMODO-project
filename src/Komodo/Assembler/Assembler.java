@@ -14,16 +14,26 @@ import java.util.Scanner;
  * @author child
  */
 public class Assembler {
-    
-    private void start(){
-        
-        
+
+    public void start() {
+
         try {
-           
-        } catch (Exception e) {
+            File file = new File("resources\\AssemblyFile.txt");
+            Scanner scan = new Scanner(file);
+
+            while (scan.hasNext()) {
+                
+                System.out.println(scan.nextLine());
+
+            }
+
+            scan.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("File was not found ");
         }
-        
+
     }
-    
-    
+
 }
