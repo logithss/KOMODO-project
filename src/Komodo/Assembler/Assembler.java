@@ -17,8 +17,8 @@ import java.util.Scanner;
 public class Assembler {
 
     public void start() {
-        
-        ArrayList<String> labels = new ArrayList<>(); 
+
+        ArrayList<String> labels = new ArrayList<>();
         
 
         try {
@@ -26,23 +26,22 @@ public class Assembler {
             Scanner scan = new Scanner(file);
 
             while (scan.hasNext()) {
-                
+
                 String line = scan.nextLine();
-                
-                
+
                 if (line.startsWith(";")) {
                     scan.skip(line);
                 } else if (line.startsWith(":")) {
-                    String label = line;
-                    labels.add(line);
+                    String label = line.substring(1, line.length());
+                    labels.add(label);
 
+                } else if ("".equals(line)){ 
+                    scan.skip(line);
                 }
-                
-                
-                
-                
 
             }
+            
+            System.out.println(labels);
 
             scan.close();
 
