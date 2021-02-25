@@ -21,5 +21,15 @@ public class Instruction {
         this.addressingMode = addressingMode;
     }
     
+    public Instruction(String mnemonic)
+    {
+        this.mnemonic = mnemonic;
+    }
+    
     public static enum AddressingMode {IMPLIED, IMMEDIATE, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDIRECT, INDIRECT_X};
+    
+    public String toString()
+    {
+        return this.mnemonic;
+    }
 }

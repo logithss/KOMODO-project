@@ -6,9 +6,11 @@
 package Komodo.Computer;
 
 import Komodo.Assembler.Assembler;
+import Komodo.Commun.Instruction;
 import Komodo.Commun.NumberUtility;
 import Komodo.Computer.Components.SystemBus;
 import Komodo.Computer.UI.*;
+import java.util.ArrayList;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -98,14 +100,9 @@ public class Test2 extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        systembus = new SystemBus();
+        /*systembus = new SystemBus();
         systembus.powerOn();
-        launch(args);
-        
-        
-
-        
-
+        launch(args);*/
 
     }
     
