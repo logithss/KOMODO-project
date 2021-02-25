@@ -9,6 +9,7 @@ import Komodo.Assembler.Assembler;
 import Komodo.Commun.NumberUtility;
 import Komodo.Computer.Components.SystemBus;
 import Komodo.Computer.UI.*;
+import java.io.IOException;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -97,15 +98,15 @@ public class Test2 extends Application {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        systembus = new SystemBus();
-        systembus.powerOn();
-        launch(args);
+    public static void main(String[] args)  {
+//        systembus = new SystemBus();
+//        systembus.powerOn();
+//        launch(args);
         
         
-
+        Assembler assembler = new Assembler();
+        assembler.start();
         
-
 
     }
     

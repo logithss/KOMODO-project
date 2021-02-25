@@ -16,10 +16,11 @@ import java.util.Scanner;
  */
 public class Assembler {
 
-    public void start() {
+    ArrayList<String> labels = new ArrayList<>();
+    ArrayList<String> commentsToIgnore = new ArrayList<>();
+    ArrayList<Command> commands = new ArrayList<>();
 
-        ArrayList<String> labels = new ArrayList<>();
-        
+    public void start() {
 
         try {
             File file = new File("resources\\AssemblyFile.txt");
@@ -29,19 +30,30 @@ public class Assembler {
 
                 String line = scan.nextLine();
 
-                if (line.startsWith(";")) {
-                    scan.skip(line);
-                } else if (line.startsWith(":")) {
+                if (line.startsWith(":")) {
                     String label = line.substring(1, line.length());
                     labels.add(label);
 
-                } else if ("".equals(line)){ 
+                } else if (line.startsWith(";")) {
+                    String comments = line.substring(1, line.length());
+                    commentsToIgnore.add(comments);
+                } else if (line.isEmpty()) {
                     scan.skip(line);
+                } else {
+                    String mnemonic = line.substring(0,3);
+                    String operand = line.substring(3,line.length());
+                    
+                    Command instruction = new Command(mnemonic , operand);
+                    commands.add(instruction);
+                    
+                    
                 }
 
             }
-            
+
             System.out.println(labels);
+            System.out.println(commentsToIgnore);
+            System.out.println(commands);
 
             scan.close();
 
