@@ -103,6 +103,7 @@ public class Test2 extends Application {
         /*systembus = new SystemBus();
         systembus.powerOn();
         launch(args);*/
+        
 
     }
     
