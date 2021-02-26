@@ -22,7 +22,7 @@ public class AssemblerMain {
         try {
             ArrayList<File> files = new ArrayList<>();
             files.add(new File("resources\\AssemblyFile.txt"));
-            assembler.assembleFiles(files);
+            assembler.assembleFiles(files, "resources\\AssemblyFile.asm");
             
         } catch (IOException ex) {
             Logger.getLogger(AssemblerMain.class.getName()).log(Level.SEVERE, null, ex);

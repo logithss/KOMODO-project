@@ -32,6 +32,7 @@ public class Assembler {
     private HashMap<String, Integer> labels;
     
     private int addressCounter =0;
+    private int byteCount = 0;
     
 
     /*public void start() {
@@ -79,13 +80,14 @@ public class Assembler {
     }
 
 */
-    public void assembleFiles(ArrayList<File> assemblyFiles) throws FileNotFoundException, IOException
+    public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException
     {
         //init
         commands  = new ArrayList<>();
         incompleteCommands = new ArrayList<>();
         labels = new HashMap<>();
         addressCounter = 0;
+        byteCount = 0;
         
         //go through all files
         Iterator<File> fileIterator = assemblyFiles.iterator();
@@ -102,17 +104,29 @@ public class Assembler {
             }
         }
         
-        //asign labels to commands that need it
+        //when all files are processed, assign labels to commands that need it
         for(Command command : incompleteCommands)
         {
             command.assignAddress(labels.get(command.labelName));
         }
         
-        System.out.println(labels.get("lable1"));
-        
         //commands are now all ready to be written in byte file
         
         //combine all arrays as one big array
+        byte[] finalByteArray = new byte[byteCount];
+        System.out.println("bytecout: "+byteCount);
+        Iterator<Command> commandIterator = commands.iterator();
+        int copyPointer = 0;
+        while(commandIterator.hasNext())
+        {
+            System.out.println("pointer: "+copyPointer);
+            byte[] instruction = commandIterator.next().bytecode;
+            System.arraycopy(instruction, 0, finalByteArray, copyPointer, instruction.length);
+            copyPointer +=instruction.length;
+        }
+        
+        //file is then written to using the given path
+        writeToFile(exportPath, finalByteArray);
     }
     
     public void interpretLine(String assemblyLine)
@@ -143,6 +157,7 @@ public class Assembler {
         else
         {
             addressCounter+=newCommand.bytecode.length;
+            byteCount+=newCommand.bytecode.length;
             if(newCommand.needLabel)
                 incompleteCommands.add(newCommand);
         }
@@ -153,10 +168,10 @@ public class Assembler {
     
     public void writeToFile(String stringPath, byte[]code) throws IOException
     {
-        byte[] byteCodeArray = new byte[32000];
-        Arrays.fill(byteCodeArray, (byte)0xff);
+        //byte[] byteCodeArray = new byte[code.length];
+        //Arrays.fill(byteCodeArray, (byte)0xff);
         Path path = Paths.get(stringPath);
-        Files.write(path, byteCodeArray);
+        Files.write(path, code);
     }
 
 }

@@ -7,6 +7,7 @@ package Komodo.Assembler;
 
 import Komodo.Commun.Instruction;
 import Komodo.Commun.Instructions;
+import Komodo.Commun.NumberUtility;
 
 /**
  *
@@ -20,8 +21,8 @@ public class Command {
     
     //new code from logithss
     private String assemblyLine;
-    public boolean needLabel = false;
-    public String labelName = "";
+    public boolean needLabel = true;
+    public String labelName = "label2";
     
     
 
@@ -34,6 +35,7 @@ public class Command {
     {
         this.assemblyLine = assemblyLine;
         this.bytecode = new byte[3];
+        this.process();
     }
 
     public String getMnemonic() {
@@ -60,11 +62,17 @@ public class Command {
     //new code from logithss
     public void assignAddress(int address)
     {
-        
+        char addressWord = (char)address;
+        byte[] addressBytes = NumberUtility.wordToBytes(addressWord);
+        this.bytecode[1] = addressBytes[0];
+        this.bytecode[2] = addressBytes[1];
     }
     
     public void process() { 
         
+        this.bytecode[0]=1;
+        this.bytecode[1]=2;
+        this.bytecode[2]=3;
         /*
         IMPLIED = nothing 
         IMMIDIATE = #

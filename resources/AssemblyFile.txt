@@ -2,7 +2,8 @@ LDA #$53
 LDA #$53
 LDA #$53
 LDA #$53
+:label
+:label2
 LDA #$53
 LDA #$53
 LDA #$53
-:lable1
