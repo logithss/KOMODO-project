@@ -10,6 +10,7 @@ import Komodo.Commun.Instruction;
 import Komodo.Commun.NumberUtility;
 import Komodo.Computer.Components.SystemBus;
 import Komodo.Computer.UI.*;
+import java.io.File;
 import java.util.ArrayList;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -33,6 +34,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -100,9 +102,9 @@ public class Test2 extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        /*systembus = new SystemBus();
+        systembus = new SystemBus();
         systembus.powerOn();
-        launch(args);*/
+        launch(args);
         
 
     }

@@ -16,12 +16,24 @@ public class Command {
     
     private String mnemonic; 
     private String operand; 
-    private byte[] bytecode;
+    public byte[] bytecode;
+    
+    //new code from logithss
+    private String assemblyLine;
+    public boolean needLabel = false;
+    public String labelName = "";
+    
     
 
     public Command(String mnemonic, String operand) {
         this.mnemonic = mnemonic;
         this.operand = operand;
+    }
+    
+    public Command(String assemblyLine)
+    {
+        this.assemblyLine = assemblyLine;
+        this.bytecode = new byte[3];
     }
 
     public String getMnemonic() {
@@ -42,6 +54,13 @@ public class Command {
     
     public String toString() { 
         return "Mnemonic: " + this.mnemonic + "\nOperand: " + this.operand;
+    }
+    
+    
+    //new code from logithss
+    public void assignAddress(int address)
+    {
+        
     }
     
     public void process() { 
@@ -78,6 +97,7 @@ public class Command {
 //        }
          
     }
+    
     
     
     
