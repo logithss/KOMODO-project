@@ -21,7 +21,7 @@ public class Command {
     
     //new code from logithss
     private String assemblyLine;
-    public boolean needLabel = true;
+    public boolean needLabel = false;
     public String labelName = "label2";
     
     
@@ -34,7 +34,7 @@ public class Command {
     public Command(String assemblyLine)
     {
         this.assemblyLine = assemblyLine;
-        this.bytecode = new byte[3];
+        //this.bytecode = new byte[3];
         this.process();
     }
 

@@ -7,3 +7,6 @@ LDA #$53
 LDA #$53
 LDA #$53
 LDA #$53
+LDA xlabel
+
+33
