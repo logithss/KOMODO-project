@@ -1,12 +1,7 @@
-LDA #$53
-LDA #$53
-LDA #$53
-LDA #$53
-:label
-:label2
-LDA #$53
-LDA #$53
-LDA #$53
-LDA xlabel
-
-33
+*5
+a
+a
+a
+*9
+a
+a

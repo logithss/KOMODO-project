@@ -34,7 +34,7 @@ public class Command {
     public Command(String assemblyLine)
     {
         this.assemblyLine = assemblyLine;
-        //this.bytecode = new byte[3];
+        this.bytecode = new byte[3];
         this.process();
     }
 

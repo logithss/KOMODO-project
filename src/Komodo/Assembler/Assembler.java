@@ -5,6 +5,7 @@
  */
 package Komodo.Assembler;
 
+import Komodo.Commun.NumberUtility;
 import java.io.*;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -21,73 +23,21 @@ import java.util.Scanner;
  * @author child
  */
 public class Assembler {
-
-    //ArrayList<String> labels = new ArrayList<>();
-    //ArrayList<String> commentsToIgnore = new ArrayList<>();
-    //ArrayList<Command> commands = new ArrayList<>();
     
     //new code from logithss
-    private ArrayList<Command> commands;
+    private ArrayList<CommandBlock> blocks;
+    private CommandBlock currentBlock;
     private ArrayList<Command> incompleteCommands;
     private HashMap<String, Integer> labels;
     
-    private int addressCounter =0;
-    private int byteCount = 0;
     
-
-    /*public void start() {
-
-        try {
-            File file = new File("resources\\AssemblyFile.txt");
-            Scanner scan = new Scanner(file);
-
-            while (scan.hasNext()) {
-
-                String line = scan.nextLine();
-
-                if (line.startsWith(":")) {
-                    String label = line.substring(1, line.length());
-                    labels.add(label);
-
-                } else if (line.startsWith(";")) {
-                    String comments = line.substring(1, line.length());
-                    commentsToIgnore.add(comments);
-                } else if (line.isEmpty()) {
-                    scan.skip(line);
-                } else {
-                    String mnemonic = line.substring(0,3);
-                    String operand = line.substring(3,line.length());
-                    
-                    Command instruction = new Command(mnemonic , operand);
-                    commands.add(instruction);
-                    
-                    
-                }
-
-            }
-
-            System.out.println(labels);
-            System.out.println(commentsToIgnore);
-            System.out.println(commands);
-
-            scan.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("File was not found ");
-        }
-
-    }
-
-*/
     public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException
     {
         //init
-        commands  = new ArrayList<>();
+        blocks = new ArrayList<>();
         incompleteCommands = new ArrayList<>();
         labels = new HashMap<>();
-        addressCounter = 0;
-        byteCount = 0;
+        newBlock(0); //create initial block at address 0
         
         //go through all files
         Iterator<File> fileIterator = assemblyFiles.iterator();
@@ -104,7 +54,7 @@ public class Assembler {
             }
         }
         
-        //when all files are processed, assign labels to commands that need it
+        //when all files are processed, give labels to commands that need them
         for(Command command : incompleteCommands)
         {
             command.assignAddress(labels.get(command.labelName));
@@ -112,20 +62,42 @@ public class Assembler {
         
         //commands are now all ready to be written in byte file
         
-        //combine all arrays as one big array
+        //sort blocks by starting positions
+        Collections.sort(blocks);
+        
+        //calculate size of final array
+        int byteCount = blocks.get(blocks.size()-1).startingAddress+blocks.get(blocks.size()-1).byteSize;
         byte[] finalByteArray = new byte[byteCount];
-        System.out.println("bytecout: "+byteCount);
-        Iterator<Command> commandIterator = commands.iterator();
-        int copyPointer = 0;
-        while(commandIterator.hasNext())
+        
+        //merge all instructions into one byte array
+        int bytePointer = 0;
+        int filledPointer = 0;
+        
+        //value to use when filling blanks in the file
+        byte blankFillValue = 0;
+        
+        for(CommandBlock block : blocks)
         {
-            System.out.println("pointer: "+copyPointer);
-            byte[] instruction = commandIterator.next().bytecode;
-            System.arraycopy(instruction, 0, finalByteArray, copyPointer, instruction.length);
-            copyPointer +=instruction.length;
+            System.out.println("block start "+block.startingAddress+", size is "+block.byteSize);
+            //fill array if there are blanks
+            if(block.startingAddress > filledPointer){
+                Arrays.fill(finalByteArray, bytePointer, block.startingAddress, blankFillValue);
+                filledPointer = block.startingAddress;
+            }
+            bytePointer = block.startingAddress;
+            
+            //write block instruction into final array
+            byte[] instruction = block.getBytecodeArray();
+            if(instruction.length != 0){
+                System.arraycopy(instruction, 0, finalByteArray, bytePointer, block.byteSize);
+                bytePointer += block.byteSize;
+                
+                if(bytePointer > filledPointer) filledPointer = bytePointer;
+            }
         }
         
-        //file is then written to using the given path
+        
+        //write final byte array into file suing given path
         writeToFile(exportPath, finalByteArray);
     }
     
@@ -141,11 +113,12 @@ public class Assembler {
                 break;
             case ':':
                 //label, calculate address its pointing to and put in labels map
-                System.out.println(addressCounter);
-                labels.put(assemblyLine.substring(1), addressCounter);
+                System.out.println(currentBlock.addressCounter);
+                labels.put(assemblyLine.substring(1), currentBlock.addressCounter);
                 break;
             case '*':
-                //create a new block of code, TODO later
+                //create a new code block at the starting address specified
+                newBlock(NumberUtility.decodeAssemblyNumber(assemblyLine.substring(1)));
                 break;
             default:
                 newCommand = new Command(assemblyLine);
@@ -156,22 +129,24 @@ public class Assembler {
             return;
         else
         {
-            addressCounter+=newCommand.bytecode.length;
-            byteCount+=newCommand.bytecode.length;
             if(newCommand.needLabel)
                 incompleteCommands.add(newCommand);
         }
-        
-        commands.add(newCommand);
+        currentBlock.addCommand(newCommand);
                 
     }
     
     public void writeToFile(String stringPath, byte[]code) throws IOException
     {
-        //byte[] byteCodeArray = new byte[code.length];
-        //Arrays.fill(byteCodeArray, (byte)0xff);
         Path path = Paths.get(stringPath);
         Files.write(path, code);
+    }
+    
+    public void newBlock(int startingAddress)
+    {
+        CommandBlock block = new CommandBlock(startingAddress);
+        currentBlock = block;
+        blocks.add(block);
     }
 
 }

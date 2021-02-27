@@ -30,4 +30,20 @@ public class NumberUtility {
     {
         return (byte)number;
     }
+    
+    public static int decodeAssemblyNumber(String number)
+    {
+        switch(number.charAt(0))
+        {
+            case '$':
+                //number is hex
+                return Integer.parseInt(number.substring(1), 16);
+            case '%':
+                //number is binary
+                return Integer.parseInt(number.substring(1), 2);
+            default:
+                return Integer.parseInt(number, 10);
+            
+        }
+    }
 }
