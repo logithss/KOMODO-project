@@ -17,11 +17,15 @@ public class Memory extends Device{
 
     public Memory(SystemBus systemBus) {
         super(systemBus);
-        memory = new byte[0xFFFF];
+        memory = new byte[65536];
         memory[1] = 1;
         memory[2] = 9;
         memory [3] = 13;
         memory[5] = 5;
+        
+        memory[36] = (byte)217;
+        memory[175] = 11;
+        memory[255] = 55;
     }
     
     //read value at address
@@ -29,6 +33,7 @@ public class Memory extends Device{
     {
         try
         {
+            System.out.println("reading memory at: "+(int)address);
             return memory[address];
         }
         catch(ArrayIndexOutOfBoundsException e)

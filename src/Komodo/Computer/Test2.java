@@ -34,6 +34,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -55,18 +56,18 @@ public class Test2 extends Application {
         RegisterPanel registerPanel = new RegisterPanel(systembus.accessCpu());
         
         //memory view
-        MemoryPanel memoryPanel = new MemoryPanel(systembus.accessMemory(), (char)0x00);
-        
-        
+        MemoryPanel memoryPanel = new MemoryPanel("Memory", systembus.accessMemory(), (char)0x00);
+     
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(20));
-        vbox.setSpacing(10);
+        vbox.setSpacing(20);
         vbox.setAlignment(Pos.TOP_RIGHT);
         vbox.getChildren().addAll(registerPanel, memoryPanel);
-        
+        //vbox.setMouseTransparent(true);
         BorderPane root = new BorderPane();
         //root.setPadding(new Insets(20));
         root.setRight(vbox);
+        //root.setMouseTransparent(true);
         
         anim = new AnimationTimer() { //Game main loop
 
