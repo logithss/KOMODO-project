@@ -9,15 +9,20 @@ import Komodo.Computer.Components.Memory;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 /**
  *
@@ -76,6 +81,17 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
             update( (int)(value - value % 16) );
         });
         
+        
+        /*memStart.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+              
+                memStart.getValueFactory().setValue((int)Integer.parseInt(newValue,10));
+            } catch (NumberFormatException e) {
+                memStart.getValueFactory().setValue(80);
+            }
+        });*/
+        
+        
         memStart.focusedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue ov, Boolean t, Boolean t1) {
@@ -91,7 +107,22 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
             }
         });
         
+        //textbox to edit memory value
+        TextField editBox = new TextField ();
+        editBox.setOnAction(new EventHandler<ActionEvent>() {
+        @Override
+            public void handle(ActionEvent e) {
+                if ((editBox.getText() != null && !editBox.getText().isEmpty())) {
+                    editBox.setText("");
+                } else {
+                    System.out.println("editBox empty");
+                }
+             }
+         });
+        
         controls.add(memStart, 1, 0);
+        controls.add(new Label("Edit: "), 2, 0);
+        controls.add(editBox, 3, 0);
         //controls.setPadding(new Insets(0, 0, 0, 0));
         controls.add(new Label("Byte value: "), 0, 1);
         controls.add(byteValueLabel, 1, 1);
@@ -104,7 +135,7 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         VBox memoryBox = new VBox();
         memoryBox.setSpacing(10);
         memoryBox.getChildren().addAll(controls, separator, grid);
-        memoryBox.setPadding(new Insets(25, 10, 25, 10));
+        memoryBox.setPadding(new Insets(10, 10, 10, 10));
         memoryBox.setStyle(          "-fx-border-color: black ;\n" +
                                 "    -fx-border-width: 1 ; \n" +
                                 "    -fx-border-style: solid");
