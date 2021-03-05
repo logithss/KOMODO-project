@@ -31,7 +31,7 @@ public class NumberUtility {
         return (byte)number;
     }
     
-    public static int decodeAssemblyNumber(String number)
+    public static int decodeAssemblyNumber(String number) throws NumberFormatException
     {
         
         

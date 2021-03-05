@@ -1,1 +1,10 @@
-STA x$fe
+add #5
+
+; ignore this line
+
+*100
+*451457
+*16
+
+add %5 ;ignore this line too
+

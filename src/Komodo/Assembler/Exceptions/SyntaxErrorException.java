@@ -9,9 +9,9 @@ package Komodo.Assembler.Exceptions;
  *
  * @author lojan
  */
-public class IllegalException extends Exception {
+public class SyntaxErrorException extends Exception {
     
-    public IllegalException(String message) { 
+    public SyntaxErrorException(String message) { 
         super(message);
     }
     

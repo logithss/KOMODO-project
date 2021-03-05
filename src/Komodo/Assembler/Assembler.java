@@ -5,7 +5,8 @@
  */
 package Komodo.Assembler;
 
-import Komodo.Assembler.Exceptions.IllegalException;
+import Komodo.Assembler.Exceptions.IllegalInstructionException;
+import Komodo.Assembler.Exceptions.SyntaxErrorException;
 import Komodo.Commun.NumberUtility;
 import java.io.*;
 import java.io.FileNotFoundException;
@@ -34,7 +35,7 @@ public class Assembler {
     private HashMap<String, Integer> labels;
     
     
-    public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException
+    public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException, SyntaxErrorException, IllegalInstructionException
     {
         //init
         blocks = new ArrayList<>();
@@ -49,64 +50,95 @@ public class Assembler {
         {
             File currentFile = fileIterator.next();
             Scanner scan = new Scanner(currentFile);
-            
+            int lineCount = 1;
             //interpret the file line by line
             while (scan.hasNext()) {
                 String assemblyLine = scan.nextLine();
-                interpretLine(assemblyLine);
+                if(!assemblyLine.isEmpty())
+                {
+                    try {
+                        interpretLine(assemblyLine, lineCount);
+                    } catch (SyntaxErrorException ex) {
+                        throw new SyntaxErrorException(currentFile.getName()+": "+ex.getMessage() + " at line " + lineCount);
+                    } catch (IllegalInstructionException ex) {
+                        throw new IllegalInstructionException(currentFile.getName()+": "+ex.getMessage() + " at line " + lineCount);
+                    }
+                }
+                lineCount++;
             }
         }
         
         //when all files are processed, give labels to commands that need them
-        for(Command command : incompleteCommands)
-        {
-            System.out.println(command + " " + labels.get(command.labelName));
-            command.assignAddress(labels.get(command.labelName));
-            
-        }
+            for(Command command : incompleteCommands)
+            {
+                Integer address = labels.get(command.labelName);
+                if(address != null)
+                    command.assignAddress(address);
+                else
+                    throw new SyntaxErrorException("Undefined label '"+command.labelName+"' at line " + command.lineNumber);
+
+            }
         
         //commands are now all ready to be written in byte file
         
         //sort blocks by starting positions
         Collections.sort(blocks);
         
+        //remove empty blocks. Cannot remove while iterating, so we use another array
+        ArrayList<CommandBlock> blocksToRemove = new ArrayList<>();
+        for(CommandBlock block: blocks)
+        {
+            if(block.byteSize==0)
+                blocksToRemove.add(block);
+        }
+        blocks.removeAll(blocksToRemove);
+        
         //calculate size of final array
         int byteCount = blocks.get(blocks.size()-1).startingAddress+blocks.get(blocks.size()-1).byteSize;
         byte[] finalByteArray = new byte[byteCount];
         
         //merge all instructions into one byte array
-        int bytePointer = 0;
-        int filledPointer = 0;
+        int bytePointer = blocks.get(0).startingAddress;
+        int filledPointer = bytePointer;
         
         //value to use when filling blanks in the file
         byte blankFillValue = 0;
         
         for(CommandBlock block : blocks)
         {
-            System.out.println("block start "+block.startingAddress+", size is "+block.byteSize);
-            //fill array if there are blanks
-            if(block.startingAddress > filledPointer){
-                Arrays.fill(finalByteArray, bytePointer, block.startingAddress, blankFillValue);
-                filledPointer = block.startingAddress;
-            }
-            bytePointer = block.startingAddress;
-            
-            //write block instruction into final array
-            byte[] instruction = block.getBytecodeArray();
-            if(instruction.length != 0){
-                System.arraycopy(instruction, 0, finalByteArray, bytePointer, block.byteSize);
-                bytePointer += block.byteSize;
-                
-                if(bytePointer > filledPointer) filledPointer = bytePointer;
-            }
+                System.out.println("block start "+block.startingAddress+", size is "+block.byteSize);
+                //System.out.println("filledPointer: "+filledPointer);
+                //fill array if there are blanks
+                if(block.startingAddress > filledPointer){
+                    Arrays.fill(finalByteArray, bytePointer, block.startingAddress, blankFillValue);
+                    filledPointer = block.startingAddress;
+                }
+                bytePointer = block.startingAddress;
+                //write block instruction into final array
+                byte[] instruction = block.getBytecodeArray();
+                if(instruction.length != 0){
+                    System.arraycopy(instruction, 0, finalByteArray, bytePointer, block.byteSize);
+                    bytePointer += block.byteSize;
+
+                    if(bytePointer > filledPointer) filledPointer = bytePointer;
+                }
         }
         
         
-        //write final byte array into file suing given path
+        //write final byte array into file uing given path
         writeToFile(exportPath, finalByteArray);
     }
     
-    public void interpretLine(String assemblyLine)
+    public void writeToFile(String stringPath, byte[]code) throws IOException
+    {
+        System.out.println("output: ");
+        for(int i : code)
+            System.out.println(Integer.toHexString(i));
+        Path path = Paths.get(stringPath);
+        Files.write(path, code);
+    }
+    
+    public void interpretLine(String assemblyLine, int line) throws SyntaxErrorException, IllegalInstructionException
     {
         char prefix = assemblyLine.charAt(0);
         
@@ -118,7 +150,7 @@ public class Assembler {
                 break;
             case ':':
                 //label, calculate address its pointing to and put in labels map
-                System.out.println(currentBlock.addressCounter);
+                //System.out.println(currentBlock.addressCounter);
                 labels.put(assemblyLine.substring(1), currentBlock.addressCounter);
                 break;
             case '*':
@@ -129,9 +161,14 @@ public class Assembler {
             {
                 try {
                     newCommand = new Command(assemblyLine);
-                } catch (IllegalException ex) {
-                    System.out.println("illigal exception");
-                    newCommand = null;
+                    newCommand.lineNumber = line;
+                } catch (IllegalInstructionException ex) {
+                    throw ex;
+                    //newCommand = null;
+                }
+                catch (SyntaxErrorException ex) {
+                    throw ex;
+                    //newCommand = null;
                 }
             }
                 break;
@@ -147,12 +184,6 @@ public class Assembler {
         }
         currentBlock.addCommand(newCommand);
                 
-    }
-    
-    public void writeToFile(String stringPath, byte[]code) throws IOException
-    {
-        Path path = Paths.get(stringPath);
-        Files.write(path, code);
     }
     
     public void newBlock(int startingAddress)

@@ -11,7 +11,8 @@ import Komodo.Commun.NumberUtility;
 import static Komodo.Commun.NumberUtility.decodeAssemblyNumber;
 import java.util.ArrayList;
 import java.util.Scanner;
-import Komodo.Assembler.Exceptions.IllegalException;
+import Komodo.Assembler.Exceptions.IllegalInstructionException;
+import Komodo.Assembler.Exceptions.SyntaxErrorException;
 import static Komodo.Commun.NumberUtility.wordToBytes;
 
 /**
@@ -25,6 +26,7 @@ public class Command {
     public byte[] bytecode;
     
     //new code from logithss
+    public int lineNumber;
     private String assemblyLine;
     public boolean needLabel = false;
     public String labelName = "label2";
@@ -36,7 +38,7 @@ public class Command {
         this.operand = operand;
     }
     
-    public Command(String assemblyLine) throws IllegalException
+    public Command(String assemblyLine) throws IllegalInstructionException, SyntaxErrorException
     {
         this.assemblyLine = assemblyLine;
         this.process();
@@ -72,7 +74,7 @@ public class Command {
         this.bytecode[2] = addressBytes[1];
     }
     
-    public void process() throws IllegalException { 
+    public void process() throws IllegalInstructionException, SyntaxErrorException { 
         
         Scanner parse = new Scanner(assemblyLine);
         boolean isNumeric = true; 
@@ -85,7 +87,7 @@ public class Command {
             this.bytecode[0] = (byte) decodeAssemblyNumber(parsedText);
         } else if (parsedText.isEmpty()) {
             /*Possibility that the parsed text is empty*/
-            System.out.println("Parsed Text is empty");
+            //System.out.println("Parsed Text is empty");
         } else {
             /*There is a possiblity that the parsed text is still a number without 
             any symbols at the beginning*/
@@ -107,6 +109,12 @@ public class Command {
             (mnemonic), then list all the possible instructions using the parsed 
             text */
             ArrayList<Instruction> fetchedInstructions = Instructions.getInstructionByMnemonic(parsedText);
+            
+            //comment from logithss: check if arrayList is empty, which means that mnemonic doesnt exist
+            //throw an exception in that case
+            
+            if(fetchedInstructions == null)
+                throw new IllegalInstructionException("Illigal mnemonic");
             
             /*Next, we parsed the thing that comes after the mnemonic, which is the 
             argument*/
@@ -181,7 +189,7 @@ public class Command {
 
                 if (counter >= fetchedInstructions.size()) {
 
-                    throw new IllegalException("No matches found");
+                    throw new IllegalInstructionException("Illegal addressing mode");
 
                 }
             }
@@ -190,7 +198,7 @@ public class Command {
            if it is the case, then set the labelname to it*/
             if (!argument.isEmpty()) {
                 try {
-                    System.out.println(argument);
+                    //System.out.println(argument);
                     int somethingBetter = NumberUtility.decodeAssemblyNumber(argument);
                 } catch (NumberFormatException e) {
 
@@ -207,41 +215,32 @@ public class Command {
             
             /*Once again, using the newly assigned instruction, fetch some information 
             depending on the addresing mode and assign its bytes to corresponding values */
-            switch (newInstruction.addressingMode) {
-                case IMMEDIATE:
-                    this.bytecode[1] = (byte) decodeAssemblyNumber(argument);
-                    break;
+            try{
+                switch (newInstruction.addressingMode) {
+                    case IMMEDIATE:
+                        this.bytecode[1] = (byte) decodeAssemblyNumber(argument);
+                        break;
 
-                case IMPLIED:
-                    break;
+                    case IMPLIED:
+                        break;
 
-                default:
-                    if (!needLabel) {
-                    char number = (char) decodeAssemblyNumber(argument);
-                    byte[] bytes = wordToBytes(number);
-                    this.bytecode[1] = bytes[0];
-                    this.bytecode[2] = bytes[1];
-                    }
-                    break;
+                    default:
+                        if (!needLabel) {
+                        char number = (char) decodeAssemblyNumber(argument);
+                        byte[] bytes = wordToBytes(number);
+                        this.bytecode[1] = bytes[0];
+                        this.bytecode[2] = bytes[1];
+                        }
+                        break;
+                }
             }
-            
-           
-            
-            
-            
-             
-            
-            
-   
-          
+            catch(NumberFormatException e)
+            {
+                throw new SyntaxErrorException("Incorect argument formating");
+            }
         }
         
-        
-    
-       
-        
-            
-        }
+    }
     
       /*
         IMPLIED = nothing 

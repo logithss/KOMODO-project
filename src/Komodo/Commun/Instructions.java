@@ -32,7 +32,7 @@ public class Instructions {
     
     //get instruction from its mnemonic (by name, returns all addressing mode possible)
     public static ArrayList<Instruction> getInstructionByMnemonic(String mnemonic) {
-        List resultList = instructionsList.stream().filter(instruction -> mnemonic.equals(instruction.mnemonic)).collect(Collectors.toList());
+        List resultList = instructionsList.stream().filter(instruction -> mnemonic.equalsIgnoreCase(instruction.mnemonic)).collect(Collectors.toList());
         if(resultList.size() <=0)
             return null;
         else

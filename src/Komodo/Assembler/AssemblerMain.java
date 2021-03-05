@@ -5,7 +5,9 @@
  */
 package Komodo.Assembler;
 
+import Komodo.Assembler.Exceptions.SyntaxErrorException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,13 +22,14 @@ public class AssemblerMain {
     
     public static void main(String[] args){
         Assembler assembler = new Assembler();
-        try {
             ArrayList<File> files = new ArrayList<>();
             files.add(new File("resources\\AssemblyFile.txt"));
-            assembler.assembleFiles(files, "resources\\AssemblyFile.asm");
-            
-        } catch (IOException ex) {
-            Logger.getLogger(AssemblerMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            try {
+                assembler.assembleFiles(files, "resources\\AssemblyFile.asm");
+                System.out.println("Files succesfully assembled");
+            } catch (Exception ex) {
+                System.out.println("here");
+                System.err.println(ex.getMessage());
+            }
     }
 }
