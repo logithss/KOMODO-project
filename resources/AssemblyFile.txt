@@ -1,7 +1,1 @@
-*5
-a
-a
-a
-*9
-a
-a
+STA xFe

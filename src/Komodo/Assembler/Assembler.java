@@ -5,6 +5,7 @@
  */
 package Komodo.Assembler;
 
+import Komodo.Assembler.Exceptions.IllegalException;
 import Komodo.Commun.NumberUtility;
 import java.io.*;
 import java.io.FileNotFoundException;
@@ -17,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -57,7 +60,9 @@ public class Assembler {
         //when all files are processed, give labels to commands that need them
         for(Command command : incompleteCommands)
         {
+            System.out.println(command + " " + labels.get(command.labelName));
             command.assignAddress(labels.get(command.labelName));
+            
         }
         
         //commands are now all ready to be written in byte file
@@ -121,8 +126,16 @@ public class Assembler {
                 newBlock(NumberUtility.decodeAssemblyNumber(assemblyLine.substring(1)));
                 break;
             default:
-                newCommand = new Command(assemblyLine);
+            {
+                try {
+                    newCommand = new Command(assemblyLine);
+                } catch (IllegalException ex) {
+                    System.out.println("illigal exception");
+                    newCommand = null;
+                }
+            }
                 break;
+
         }
         
         if(newCommand == null)
