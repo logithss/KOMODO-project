@@ -170,27 +170,117 @@ public class Cpu extends Device implements Clockable {
         A = (byte) (argumentFetched ^ A);
     }
 
-    private void cmp() {
 
-        // when comparing change the bigger flag and zero flag
-        // A > arg big flag set
-        // A = arg zero flag set
-        // A < arg big flag explicitly not set
-    }
 
     private void bnz() {
 
         if (flags[3] = false) {
-            //use newAddress
+            pc = newAddress;
         }
     }
 
     private void bzr() {
 
         if (flags[3] = true) {
-            //use newAddress
+            pc = newAddress;
         }
     }
+    
+    private void bcr(){
+        
+        if (flags[0] = true){
+            pc = newAddress;
+        }
+        
+    }
+    
+    private void bng(){
+        
+        if(flags[1]= true){
+            pc = newAddress;
+        }
+    }
+    
+    private void bbg(){
+        
+        if(flags[2]= true){
+            pc = newAddress;
+        }
+        
+    }
+    
+    private void bsl(){
+        
+        //question if smaller  = is bigger explicitly false?
+        
+        if(flags[2]= true){
+            pc = newAddress;
+        }
+        
+    }
+    
+    
+    
+    
+        private void cmp() {
+
+        int val = Byte.compare(A, argumentFetched);
+        
+        if(val == 0){
+            flags[3] = true;
+            
+        }
+        else if(val == 1){
+            
+            flags[2] = true;
+            
+        }else{
+            
+            flags[2] = false;
+        }
+            
+    }
+        
+          private void cpx() {
+
+        int val = Byte.compare(X, argumentFetched);
+        
+        if(val == 0){
+            flags[3] = true;
+            
+        }
+        else if(val == 1){
+            
+            flags[2] = true;
+            
+        }else{
+            
+            flags[2] = false;
+        }
+            
+    }
+          
+          
+           private void cpy() {
+
+        int val = Byte.compare(X, argumentFetched);
+        
+        if(val == 0){
+            flags[3] = true;
+            
+        }
+        else if(val == 1){
+            
+            flags[2] = true;
+            
+        }else{
+            
+            flags[2] = false;
+        }
+            
+    }
+        
+        
 
     private void clo() {
         flags[0] = false;
@@ -214,7 +304,18 @@ public class Cpu extends Device implements Clockable {
 
     private void jmp() {
 
-        //use newAddress
+        pc = newAddress;
+        
+    }
+    
+    private void jsr(){
+        
+        // to write
+    }
+
+    private void rsr(){
+        
+        // to write
     }
 
     private void lda() {
@@ -250,6 +351,28 @@ public class Cpu extends Device implements Clockable {
         stackPointer++;
 
     }
+    
+      public void phx() {
+
+        char stackAddress = (char) (stackStart + stackPointer);
+
+        systembus.accessMemory().writeByte(stackAddress, X);
+
+        stackPointer++;
+
+    }
+    
+    
+      public void pla(){
+          
+          // to write
+          
+      }
+      
+      public void plx(){
+          
+           // to write
+      }
 
     private void tax() {
         X = A;
