@@ -190,10 +190,13 @@ public class Command {
            if it is the case, then set the labelname to it*/
             if (!argument.isEmpty()) {
                 try {
-                int somethingBetter = NumberUtility.decodeAssemblyNumber(argument);
+                    System.out.println(argument);
+                    int somethingBetter = NumberUtility.decodeAssemblyNumber(argument);
                 } catch (NumberFormatException e) {
-                     needLabel = true; 
-                     labelName = argument;
+
+                    needLabel = true;
+                    labelName = argument;
+
                 }
             }
             
