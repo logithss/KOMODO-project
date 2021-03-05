@@ -1,10 +1,6 @@
-add #5
-
-; ignore this line
-
-*100
-*451457
-*16
-
-add %5 ;ignore this line too
+add x$a4
+54
+75
+$fe
+%10101
 

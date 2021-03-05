@@ -23,6 +23,7 @@ public class FileItem extends HBox{
     
     public FileItem(File path)
     {
+        this.setSpacing(10);
         this.filePath = path;
         Label name = new Label(filePath.getName());
         this.getChildren().addAll(name);

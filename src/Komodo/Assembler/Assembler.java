@@ -35,7 +35,7 @@ public class Assembler {
     private HashMap<String, Integer> labels;
     
     
-    public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException, SyntaxErrorException, IllegalInstructionException
+    public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException, SyntaxErrorException, IllegalInstructionException, Exception
     {
         //init
         blocks = new ArrayList<>();
@@ -92,6 +92,9 @@ public class Assembler {
                 blocksToRemove.add(block);
         }
         blocks.removeAll(blocksToRemove);
+        
+        if(blocks.size()==0)
+            throw new Exception("Files empty or incorrect format, no output was generated");
         
         //calculate size of final array
         int byteCount = blocks.get(blocks.size()-1).startingAddress+blocks.get(blocks.size()-1).byteSize;
