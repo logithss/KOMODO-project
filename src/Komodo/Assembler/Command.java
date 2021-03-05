@@ -191,10 +191,10 @@ public class Command {
             if (!argument.isEmpty()) {
                 try {
                 int somethingBetter = NumberUtility.decodeAssemblyNumber(argument);
-            } catch (NumberFormatException e) {
-                 needLabel = true; 
-                 labelName = argument;
-            }
+                } catch (NumberFormatException e) {
+                     needLabel = true; 
+                     labelName = argument;
+                }
             }
             
             /*Using the newly assigned instruction, we can now fetch the opcode 
