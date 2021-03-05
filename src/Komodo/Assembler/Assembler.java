@@ -60,7 +60,9 @@ public class Assembler {
         //when all files are processed, give labels to commands that need them
         for(Command command : incompleteCommands)
         {
+            System.out.println(command + " " + labels.get(command.labelName));
             command.assignAddress(labels.get(command.labelName));
+            
         }
         
         //commands are now all ready to be written in byte file

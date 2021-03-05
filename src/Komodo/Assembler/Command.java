@@ -110,9 +110,18 @@ public class Command {
             
             /*Next, we parsed the thing that comes after the mnemonic, which is the 
             argument*/
-            String parsedOperand = parse.next();
+            
+            
+            String parsedOperand = "";
             Instruction.AddressingMode adressingMode;
             String argument = "";
+            
+            if (parse.hasNext()) {
+             parsedOperand = parse.next();
+            } else { 
+                parsedOperand = "";
+            }
+            
             
             
             /*Cases for how the argument is written. Depending on how its written 
