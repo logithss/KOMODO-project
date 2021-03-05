@@ -33,7 +33,11 @@ public class NumberUtility {
     
     public static int decodeAssemblyNumber(String number)
     {
-        switch(number.charAt(0))
+        
+        
+        try {
+            
+             switch(number.charAt(0))
         {
             case '$':
                 //number is hex
@@ -45,5 +49,10 @@ public class NumberUtility {
                 return Integer.parseInt(number, 10);
             
         }
+            
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException();
+        }
+      
     }
 }
