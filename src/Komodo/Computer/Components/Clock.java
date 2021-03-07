@@ -15,7 +15,7 @@ public abstract class Clock extends Thread implements Runnable{
     public volatile boolean halted;
     public long cycleCount = 0;
     
-    private double interupt = 0;
+    public double interupt = 0;
     private static long timerLast = 0;
     public double debugDelay = 0;
     

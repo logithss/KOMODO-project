@@ -47,16 +47,11 @@ public class Cpu extends Device implements Clockable {
          */
         stackPointer = systembus.accessMemory().readByte((char)0);
         
-        flags[0] = !flags[1];
-        flags[1] = flags[2];
-        flags[2] = !flags[3];
-        flags[3] = flags[0];
-        pc++;
-
-        /*byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
+   
+        byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
         System.out.println((int) pc + " : " + OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
-        //fetching argument from memory
+        
         switch (instruction.addressingMode) {
             case IMPLIED:
                 implied();
@@ -143,7 +138,7 @@ public class Cpu extends Device implements Clockable {
 
         }
 
-        pc++;*/
+        pc++;
         displayPc = pc;
     }
 
@@ -152,6 +147,9 @@ public class Cpu extends Device implements Clockable {
         
         // general method to check all flags
         // used in the clock function to check all functions
+        
+        
+        
     }
 
     
@@ -226,69 +224,157 @@ public class Cpu extends Device implements Clockable {
     // INCLUDE INDIRECT
     // ABS X - ADD ARG TO X AND GO TO THAT ADDRESS
     //now these are the instruction methods
-    private void nop() {
+ 
+    
+    private void ifOverflowed(byte a, byte b){
+        
+        int result = Byte.toUnsignedInt(a) + Byte.toUnsignedInt(b);
+         if(result >= 256){
+             
+            flags[0] = true;
+        } 
+    }
+    
+     private void ifNegative(byte a, byte b){
+        
+        int result = Byte.toUnsignedInt(a) - Byte.toUnsignedInt(b);
+         if(result < 0){
+             
+            flags[1] = true;
+        } 
+    }
+     
+     
+     
+     private void nop() {
+        
         
     }
 
     private void add() {
+        
+        ifOverflowed(A, argumentFetched);
         A += argumentFetched;
-
-        //overflowed
+      
+        
     }
 
     private void sub() {
+         ifNegative(A, argumentFetched);
         A -= argumentFetched;
 
-        //overflowed
+        if(A==0){
+            flags[3] = true;
+        }
+         
     }
 
+ 
+    
+    
     private void inc() {
+        
+        ifOverflowed(A, (byte)1);
+        
         A++;
 
+      
         // if register overflowed
         // if register negative
         // if register zero
     }
 
     private void inx() {
+        ifOverflowed(X, (byte)1);
         X++;
     }
 
     private void iny() {
+        ifOverflowed(Y, (byte)1);
         Y++;
     }
 
     private void dec() {
+        ifNegative(A, (byte)1);
         A--;
+        
+        if (A ==0){
+            flags[3]=true;
+        }
     }
 
     private void dex() {
+        ifNegative(X, (byte)1);
         X--;
+        
+        
+        if(X == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void dey() {
+        ifNegative(Y, (byte)1);
         Y--;
+        
+        if(Y == 0 ){
+            flags[3] = true;
+        }
     }
 
+    
     private void shr() {
-        argumentFetched = (byte) (argumentFetched >> 1);
+        
+        int result = (int)(A>>1);
+        
+        if(result == 0 ){
+            flags[3] = true;
+        }
+        
+        A =  (byte)(A >> 1);
 
+        
     }
 
     private void shl() {
-        argumentFetched = (byte) (argumentFetched << 1);
+        int result = (int)(A<<1);
+        
+        if(result == 0 ){
+            flags[3] = true;
+        }
+        A =  (byte)(A << 1);
 
     }
 
+    //zeros - and/or/xor/loads/pull/ transfers the final register 
+    
+    
     private void and() {
+        
+        int result =(int) (argumentFetched & A);
+        
+        if(result == 0 ){
+            flags[3] = true;
+        }
         A = (byte) (argumentFetched & A);
     }
+    
 
     private void or() {
+         int result =(int) (argumentFetched | A);
+        
+        if(result == 0 ){
+            flags[3] = true;
+        }
         A = (byte) (argumentFetched | A);
     }
 
     private void xor() {
+         int result =(int) (argumentFetched ^ A);
+        
+        if(result == 0 ){
+            flags[3] = true;
+        }
 
         A = (byte) (argumentFetched ^ A);
     }
@@ -520,8 +606,16 @@ public class Cpu extends Device implements Clockable {
          
          char stackAddress = (char) (stackStart + stackPointer);
          
+        
+         
          A = systembus.accessMemory().readByte(stackAddress);
         
+          
+        
+        if(A == 0 ){
+            flags[3] = true;
+        }
+          
         
     }
 
@@ -533,22 +627,51 @@ public class Cpu extends Device implements Clockable {
          char stackAddress = (char) (stackStart + stackPointer);
          
          X = systembus.accessMemory().readByte(stackAddress);
+         
+          
+        
+        if(X == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void tax() {
         X = A;
+        
+        
+        
+        if(X == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void tay() {
         Y = A;
+        
+         
+        
+        if(Y == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void txa() {
         A = X;
+        
+        
+        if(A == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void tya() {
         A = Y;
+        
+          
+        
+        if(A == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void sax() {
@@ -576,7 +699,7 @@ public class Cpu extends Device implements Clockable {
     
     private void dly(){
         
-        // method to be implementd in Clock
+        systembus.accessSystemClock().setInteruptTime(10);
     }
 
     private void rng() {
