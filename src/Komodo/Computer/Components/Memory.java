@@ -18,14 +18,9 @@ public class Memory extends Device{
     public Memory(SystemBus systemBus) {
         super(systemBus);
         memory = new byte[65536];
-        memory[1] = 1;
-        memory[2] = 9;
-        memory [3] = 13;
-        memory[5] = 5;
-        
-        memory[36] = (byte)217;
-        memory[175] = 11;
-        memory[255] = 55;
+        memory[0] = 0x40;
+        memory[1] = (byte)0xe0;
+        memory[2] = (byte)0x6c;
     }
     
     //read value at address

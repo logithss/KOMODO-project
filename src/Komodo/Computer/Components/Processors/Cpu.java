@@ -54,19 +54,24 @@ public class Cpu extends Device implements Clockable {
             case IMPLIED:
                 implied();
                 break;
-
+            case IMMEDIATE:
+                immediate();
+                break;
             case ABSOLUTE:
                 absolute();
                 break;
-                
-           case ABSOLUTE_X: 
-               absoluteX();
+            case ABSOLUTE_X:
+                absoluteX();
                 break;
-                
-                
-                case ABSOLUTE_Y: 
-               absoluteY();
-               break;
+            case ABSOLUTE_Y: 
+                absoluteY();
+                break;
+            case INDIRECT: 
+                indirect();
+                break;
+            case INDIRECT_X: 
+                indirectX();
+                break;
         }
 
         switch (instruction.mnemonic) {
@@ -132,7 +137,6 @@ public class Cpu extends Device implements Clockable {
         }
 
         pc++;
-
     }
 
     private void checkAllFlags() {
@@ -156,8 +160,6 @@ public class Cpu extends Device implements Clockable {
     private void immediate(){
         pc++;
         argumentFetched = systembus.accessMemory().readByte(pc);
-  
-        
     }
 
     private void absolute() {

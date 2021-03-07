@@ -56,6 +56,7 @@ public abstract class Clock extends Thread implements Runnable{
     public void haltClock()
     {
         this.halted = true;
+        System.out.println("halt after "+this.cycleCount+" cycles");
     }
     
     public void stopClock()
