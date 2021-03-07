@@ -33,7 +33,7 @@ public class Memory extends Device{
     {
         try
         {
-            System.out.println("reading memory at: "+(int)address);
+            //System.out.println("reading memory at: "+(int)address);
             return memory[address];
         }
         catch(ArrayIndexOutOfBoundsException e)
@@ -105,5 +105,11 @@ public class Memory extends Device{
         {
             return false;
         }
+    }
+    
+    public void flashMemory(byte[] data, int position)
+    {
+        if(position < 0xffff && position + data.length <= 0xffff)
+            System.arraycopy(data, 0, this.memory, position, data.length);
     }
 }

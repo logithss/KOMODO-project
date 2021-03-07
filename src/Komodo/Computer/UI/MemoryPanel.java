@@ -38,9 +38,12 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
     
     private int currentSelectedCellX = 0;
     private int currentSelectedCellY = 0;
+    private char selectedAddress = 0;
     
     private GridPane grid;
+    
     private AddressLabel[][] labelArray;
+    private TextField editBox;
     private Label[] addressArray;
     private Label byteValueLabel;
     private Label wordValueLabel;
@@ -75,7 +78,7 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         memStart.valueProperty().addListener((obs, oldValue, newValue) ->{
             //to remove focus from address spinner
             grid.requestFocus();
-            System.out.println(newValue);
+            //System.out.println(newValue);
             int value = (int)newValue;
             memStart.getValueFactory().setValue(value - value % 16);
             update( (int)(value - value % 16) );
@@ -108,21 +111,53 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         });
         
         //textbox to edit memory value
-        TextField editBox = new TextField ();
+        editBox = new TextField ();
+        editBox.setPrefWidth(50);
         editBox.setOnAction(new EventHandler<ActionEvent>() {
         @Override
             public void handle(ActionEvent e) {
                 if ((editBox.getText() != null && !editBox.getText().isEmpty())) {
-                    editBox.setText("");
+                    try{
+                        byte value = (byte) Integer.parseInt(editBox.getText(), 16);
+                        memory.writeByte((char) (selectedAddress), value);
+                        editBox.setText("");
+                        update();
+                        //select the  next memory cell
+                        selectNextCell();
+                    }
+                    catch(NumberFormatException ex)
+                    {
+                        editBox.setText("");
+                    }
                 } else {
-                    System.out.println("editBox empty");
+                    //just skip to next cell
+                    selectNextCell();
                 }
              }
          });
         
+        //limit number of character in editBox (character limit is 2)
+        editBox.lengthProperty().addListener(new ChangeListener<Number>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> observable,
+                    Number oldValue, Number newValue) {
+                if (newValue.intValue() > oldValue.intValue()) {
+                    // Check if the new character is greater than LIMIT
+                    if (editBox.getText().length() >= 2) {
+
+                        // if it's 11th character then just setText to previous
+                        // one
+                        editBox.setText(editBox.getText().substring(0, 2));
+                    }
+                }
+            }
+        });
+        
         controls.add(memStart, 1, 0);
-        controls.add(new Label("Edit: "), 2, 0);
-        controls.add(editBox, 3, 0);
+        controls.add(new Label("    "), 2, 0);
+        controls.add(new Label("Edit: "), 3, 0);
+        controls.add(editBox, 4, 0);
         //controls.setPadding(new Insets(0, 0, 0, 0));
         controls.add(new Label("Byte value: "), 0, 1);
         controls.add(byteValueLabel, 1, 1);
@@ -173,14 +208,29 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
     public void update(int newValue)
     {
         this.startPointer = (char) newValue;
+        calculateSelectedAddress(currentSelectedCellX, currentSelectedCellY);
         update();
     }
     public void update()
     {
-        byte byteValue = memory.readByte((char) (startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index));
-        byteValueLabel.setText(String.format("%02X", byteValue & 0x0FFFFF).toUpperCase());
-        char wordValue = memory.readWord((char) (startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index));
-        wordValueLabel.setText(String.format("%04X", wordValue & 0x0FFFFF).toUpperCase());
+        if((startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index) <= 0xffff){
+            byte byteValue = memory.readByte((char) (startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index));
+            byteValueLabel.setText(String.format("%02X", byteValue & 0x0FFFFF).toUpperCase());
+        }
+        else
+        {
+            byteValueLabel.setText("--");
+        }
+        if((startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index) <= 0xfffe){
+            char wordValue = memory.readWord((char) (startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index));
+            wordValueLabel.setText(String.format("%04X", wordValue & 0x0FFFFF).toUpperCase());
+        }
+        else
+        {
+            wordValueLabel.setText("----");
+        }
+        
+        //draw memory values in grid
         int currentAddress = startPointer;
         for(int y = 0; y< lineCount; y++)
         {
@@ -209,6 +259,26 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         }
     }
     
+    private void selectNextCell()
+    {
+        int x = currentSelectedCellX;
+        int y  = currentSelectedCellY;
+        x++;
+        if(x >= byteCount)
+            {
+                y++;
+                x=0;
+                if(y >= lineCount)
+                {
+                    startPointer+=byteCount;
+                    y=lineCount-1;
+                }
+            }
+        if((labelArray[x][y].index+startPointer) <= 0xffff)
+            selectCell(x,y);
+        update();
+    }
+    
     private void selectCell(int x, int y)
     {
         //l.setStyle("-fx-background-color: gray");
@@ -216,10 +286,19 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         l.setStyle("-fx-background-color: transparent");
         l = labelArray[x][y];
         l.setStyle("-fx-background-color: gray");
+        calculateSelectedAddress(x, y);
+        //System.out.println("selected address: "+ Integer.toHexString((int)selectedAddress));
         currentSelectedCellX = x;
         currentSelectedCellY = y;
         
+        editBox.requestFocus();
         update();
+    }
+    
+    private void calculateSelectedAddress(int x, int y)
+    {
+        Label l = labelArray[x][y];
+        selectedAddress = (char) (startPointer + ((AddressLabel)l).index);
     }
     
 }

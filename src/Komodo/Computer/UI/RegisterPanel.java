@@ -5,9 +5,12 @@
  */
 package Komodo.Computer.UI;
 
+import Komodo.Computer.Components.Memory;
 import Komodo.Computer.Components.Processors.Cpu;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -28,22 +31,24 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
     private Label[] registerValues; //PC A X Y STACK
     private Label[] flagValues; //C N B Z
     
-    public RegisterPanel(String title, Cpu cpu)
+    private ObservableList<Label> stackItems;
+    private int stackSize = 5;
+    private ListViewHandeler stackHandeler;
+    
+    public RegisterPanel(String title, Cpu cpu, Memory memory)
     {
         super(title);
         this.cpu = cpu;
+        stackHandeler = new ListViewHandeler(memory, cpu.getStackStart(), (char) (cpu.getStackStart()+0xff), stackSize);
+        stackHandeler.curentIsMiddle = true;
         construct();
+        update();
     }
     
     public void construct()
     {
         HBox registerBox = new HBox();
-        this.setStyle(
-                                "-fx-border-color: blue ;\n" +
-                                "    -fx-border-width: 5 ; \n" +
-                                "    -fx-border-style: solid  line-cap round ;" +
-                                "-fx-background-color:gray;");
-        registerBox.setPadding(new Insets(5));
+        registerBox.setPadding(new Insets(10));
         registerBox.setSpacing(20);
         
         GridPane statsBox = new GridPane();
@@ -60,7 +65,9 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         registerValues = new Label[5];
         for(int n = 0; n< 5; n++)
         {
-            registerValues[n].setStyle("-fx-font: 24 arial;");
+            Label valueLabel = new Label("");
+            valueLabel.setStyle("-fx-font: 24 arial;");
+            registerValues[n]= valueLabel;
             statsBox.add(registerValues[n], 2, n);
         }
         
@@ -79,16 +86,12 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         flagValues = new Label[4];
         flagValues[0] = new Label("C");
         flagValues[0].setStyle("-fx-font: 24 arial;");
-        flagValues[0].setTextFill(Color.RED);
         flagValues[1] = new Label("N");
         flagValues[1].setStyle("-fx-font: 24 arial;");
-        flagValues[1].setTextFill(Color.RED);
         flagValues[2] = new Label("B");
         flagValues[2].setStyle("-fx-font: 24 arial;");
-        flagValues[2].setTextFill(Color.GREEN);
         flagValues[3] = new Label("Z");
         flagValues[3].setStyle("-fx-font: 24 arial;");
-        flagValues[3].setTextFill(Color.RED);
         for(int i = 0; i <4; i++)
             flagBox.getChildren().add(flagValues[i]);
         
@@ -97,18 +100,8 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         statsBox.add(statusLabel, 0, 5);
         statsBox.add(flagBox, 2, 5);
         
-        /*ListView<String> stackList = new ListView<String>();
-        stackList.setStyle("-fx-font: 24 arial;");
-        stackList.getItems().add("$40ff b5");
-        stackList.getItems().add("$4100 15");
-        stackList.getItems().add("$4101 8f");
-        stackList.getItems().add("$4102 02");
-        stackList.getItems().add("$4103 00");*/
-        
         GridPane stackList = new GridPane();
-        Label stackTitle = new Label("STACK");
-        stackTitle.setStyle("-fx-font: 24 arial;");
-        stackList.add(stackTitle, 0, 0);
+        //stackList.add(stackTitle, 0, 0);
         
         Label add1 = new Label("$40FF");
         add1.setStyle("-fx-font: 24 arial;");
@@ -150,12 +143,79 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
             stackList.add(ins, 1, i);
         }
         
-        registerBox.getChildren().addAll(statsBox, stackList);
+        ListView stackView = new ListView();
+        //stackView.setPrefWidth(100);
+        stackView.setPrefHeight(150);
+        stackView.setMouseTransparent( true );
+        stackView.setFocusTraversable( false );
+        
+        
+        stackItems = FXCollections.observableArrayList();
+        for(int i =0; i< stackSize; i++)
+        {
+            Label stackItem = new Label("$1ef   0e");
+            stackItems.add(stackItem);
+        }
+        stackView.setItems(stackItems);
+        
+        Label stackTitle = new Label("STACK");
+        stackTitle.setStyle("-fx-font: 24 arial;");
+        
+        VBox stackBox = new VBox();
+        stackBox.setSpacing(5);
+        stackBox.getChildren().addAll(stackTitle, stackView);
+        
+        registerBox.getChildren().addAll(statsBox, stackBox);
+        registerBox.setStyle("-fx-border-color: black ;\n" +
+                            "    -fx-border-width: 1 ; \n" +
+                            "    -fx-border-style: solid");
+        
+        super.setPanel(registerBox);
     }
 
     @Override
     public void update() {
-        //update register values
-        //registerValues[0].setText( (cpu.) );
+        //update register values //PC A X Y STACK
+        registerValues[0].setText(Integer.toHexString(cpu.getPC()));
+        registerValues[1].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getA())));
+        registerValues[2].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getX())));
+        registerValues[3].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getY())));
+        registerValues[4].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getStackPointer())));
+        
+        //update status flags //C N B Z
+        boolean[] flags = cpu.getFlags();
+        for(int i =0; i<flagValues.length; i++)
+            flagValues[i].setTextFill(flags[i] ? Color.GREEN : Color.RED);
+        
+        //update stack
+        if(stackHandeler.curentIsMiddle){
+            stackItems.get((stackSize/2)).setStyle("-fx-background-color: black");
+            stackItems.get((stackSize/2)).setTextFill(Color.WHITE);
+        }
+        else
+        {
+            stackItems.get(0).setStyle("-fx-background-color: black");
+            stackItems.get(0).setTextFill(Color.WHITE);
+        }
+        
+                
+        char stackViewStart = (char) (cpu.getStackStart()+Byte.toUnsignedInt(cpu.getStackPointer()));
+        byte[] values = stackHandeler.fetchValues(stackViewStart);
+        int offset = 0;
+        if(stackHandeler.curentIsMiddle)
+            offset = -(stackSize/2);
+        
+        for(int i = 0; i < values.length; i++)
+        {
+            byte fetchedValue = values[i];
+            String valueText = String.format("%02X",fetchedValue);
+            String addressText = String.format("%02X",stackViewStart+i+offset);
+            
+            if(fetchedValue == 100){
+                valueText = "--";
+                addressText = "--";
+            }
+            stackItems.get(i).setText("$"+addressText+ "    "+ valueText);
+        }
     }
 }

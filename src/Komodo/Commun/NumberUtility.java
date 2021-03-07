@@ -28,7 +28,7 @@ public class NumberUtility {
     
     public static byte getUnsignedByte(int number)
     {
-        return (byte)number;
+        return (byte) number;
     }
     
     public static int decodeAssemblyNumber(String number) throws NumberFormatException

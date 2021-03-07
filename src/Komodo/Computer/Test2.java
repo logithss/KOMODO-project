@@ -36,7 +36,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -53,16 +55,27 @@ public class Test2 extends Application {
         window = primaryStage;
         
         //registers panel
-        RegisterPanel registerPanel = new RegisterPanel("Registers", systembus.accessCpu());
+        RegisterPanel registerPanel = new RegisterPanel("Registers", systembus.accessCpu(), systembus.accessMemory());
         
         //memory view
         MemoryPanel memoryPanel = new MemoryPanel("Memory", systembus.accessMemory(), (char)0x00);
+        
+        //TEST ONLY memory flash panel
+        /*Button flashButton = new Button("Open flash Window");
+        flashButton.setOnAction(
+            new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(final ActionEvent e) {
+                    openMemoryFlashWindow();
+                }
+            });*/
+        
      
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(20));
         vbox.setSpacing(20);
         vbox.setAlignment(Pos.TOP_RIGHT);
-        vbox.getChildren().addAll(registerPanel, memoryPanel);
+        vbox.getChildren().addAll(registerPanel, memoryPanel/*, flashButton*/);
         //vbox.setMouseTransparent(true);
         BorderPane root = new BorderPane();
         //root.setPadding(new Insets(20));
@@ -73,11 +86,13 @@ public class Test2 extends Application {
 
             @Override
             public void handle(long l) {
+                registerPanel.update();
+                memoryPanel.update();
             }
         };
         anim.start();
         
-        Scene scene = new Scene(root, 500, 700);
+        Scene scene = new Scene(root, 520, 700);
         primaryStage.setOnCloseRequest(e -> {
             e.consume();
             closeApplication();
@@ -86,6 +101,18 @@ public class Test2 extends Application {
         primaryStage.setTitle("Hello World!");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    public void openMemoryFlashWindow()
+    {
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setResizable(false);
+        dialog.initStyle(StageStyle.UNIFIED);
+        dialog.initOwner(window);
+        Scene panel = new Scene(new MemoryFlashPanel(systembus.accessMemory(), window), 400, 200);
+        dialog.setScene(panel);
+        dialog.show();
     }
     
     public void closeApplication() {
