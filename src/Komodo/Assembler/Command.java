@@ -76,6 +76,8 @@ public class Command {
     
     public void process() throws IllegalInstructionException, SyntaxErrorException { 
         
+        System.out.println("line");
+        
         Scanner parse = new Scanner(assemblyLine);
         boolean isNumeric = true; 
         String parsedText = parse.next(); 
@@ -157,7 +159,7 @@ public class Command {
                 adressingMode = Instruction.AddressingMode.ABSOLUTE_Y;
                 bytecode = new byte[3];
                 argument = parsedOperand.substring(1, parsedOperand.length());
-            } else if (parsedOperand.isEmpty()) {
+            } else if (parsedOperand.isEmpty() || parsedOperand.startsWith(";")) {
                 adressingMode = Instruction.AddressingMode.IMPLIED;
                 bytecode = new byte[1];
             } else { 
@@ -177,6 +179,7 @@ public class Command {
             /*Must check whether the instructions does in fact exist, and that it will 
             assign the corresponding adressing mode to the right instruction*/
             Instruction newInstruction = null;
+            System.out.println(adressingMode);
             while (!isMatched) {
                 if (fetchedInstructions.get(counter).addressingMode == adressingMode) {
                     newInstruction = fetchedInstructions.get(counter);

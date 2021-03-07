@@ -53,7 +53,7 @@ public class Test2 extends Application {
         window = primaryStage;
         
         //registers panel
-        RegisterPanel registerPanel = new RegisterPanel(systembus.accessCpu());
+        RegisterPanel registerPanel = new RegisterPanel("Registers", systembus.accessCpu());
         
         //memory view
         MemoryPanel memoryPanel = new MemoryPanel("Memory", systembus.accessMemory(), (char)0x00);

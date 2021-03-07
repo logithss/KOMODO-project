@@ -6,6 +6,8 @@
 package Komodo.Computer.UI;
 
 import Komodo.Computer.Components.Processors.Cpu;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -19,44 +21,47 @@ import javafx.scene.paint.Color;
  *
  * @author toufik.issad
  */
-public class RegisterPanel extends HBox implements UIPanel{
+public class RegisterPanel extends TitlePanel implements UIPanel{
     
     private Cpu cpu;
     
-    public RegisterPanel(Cpu cpu)
+    private Label[] registerValues; //PC A X Y STACK
+    private Label[] flagValues; //C N B Z
+    
+    public RegisterPanel(String title, Cpu cpu)
     {
+        super(title);
         this.cpu = cpu;
-        update();
-        System.out.println("register");
+        construct();
     }
     
-    public void update()
+    public void construct()
     {
+        HBox registerBox = new HBox();
         this.setStyle(
                                 "-fx-border-color: blue ;\n" +
                                 "    -fx-border-width: 5 ; \n" +
                                 "    -fx-border-style: solid  line-cap round ;" +
                                 "-fx-background-color:gray;");
-        this.setPadding(new Insets(5));
-        this.setSpacing(20);
+        registerBox.setPadding(new Insets(5));
+        registerBox.setSpacing(20);
         
         GridPane statsBox = new GridPane();
         //statsBox.getChildren().addAll(labelPC, labelA, labelX, labelY, stackPointer, flagBox);
         
-        String[] name = {"PC", "A", "X", "Y", "STACK*"};
+        String[] registerNames = {"PC", "A", "X", "Y", "STACK*"};
         for(int n = 0; n< 5; n++)
         {
-            Label nameLabel = new Label(name[n]);
+            Label nameLabel = new Label(registerNames[n]);
             nameLabel.setStyle("-fx-font: 24 arial;");
             statsBox.add(nameLabel, 0, n);
         }
         
-        String[] value = {"$45FC", "$45 [75]", "$A7 [184]", "$0 [0]", "$200"};
+        registerValues = new Label[5];
         for(int n = 0; n< 5; n++)
         {
-            Label valueLabel = new Label(value[n]);
-            valueLabel.setStyle("-fx-font: 24 arial;");
-            statsBox.add(valueLabel, 2, n);
+            registerValues[n].setStyle("-fx-font: 24 arial;");
+            statsBox.add(registerValues[n], 2, n);
         }
         
         for(int n = 0; n< 5; n++)
@@ -70,19 +75,22 @@ public class RegisterPanel extends HBox implements UIPanel{
         flagBox.setAlignment(Pos.TOP_LEFT);
         //flagBox.setPadding(new Insets(5));
         flagBox.setSpacing(5);
-        Label carry = new Label("C");
-        carry.setStyle("-fx-font: 24 arial;");
-        carry.setTextFill(Color.RED);
-        Label negative = new Label("N");
-        negative.setStyle("-fx-font: 24 arial;");
-        negative.setTextFill(Color.RED);
-        Label bigger = new Label("B");
-        bigger.setStyle("-fx-font: 24 arial;");
-        bigger.setTextFill(Color.GREEN);
-        Label zero = new Label("Z");
-        zero.setStyle("-fx-font: 24 arial;");
-        zero.setTextFill(Color.RED);
-        flagBox.getChildren().addAll(carry, negative, bigger, zero);
+        
+        flagValues = new Label[4];
+        flagValues[0] = new Label("C");
+        flagValues[0].setStyle("-fx-font: 24 arial;");
+        flagValues[0].setTextFill(Color.RED);
+        flagValues[1] = new Label("N");
+        flagValues[1].setStyle("-fx-font: 24 arial;");
+        flagValues[1].setTextFill(Color.RED);
+        flagValues[2] = new Label("B");
+        flagValues[2].setStyle("-fx-font: 24 arial;");
+        flagValues[2].setTextFill(Color.GREEN);
+        flagValues[3] = new Label("Z");
+        flagValues[3].setStyle("-fx-font: 24 arial;");
+        flagValues[3].setTextFill(Color.RED);
+        for(int i = 0; i <4; i++)
+            flagBox.getChildren().add(flagValues[i]);
         
         Label statusLabel = new Label("STATUS");
         statusLabel.setStyle("-fx-font: 24 arial;");
@@ -142,7 +150,12 @@ public class RegisterPanel extends HBox implements UIPanel{
             stackList.add(ins, 1, i);
         }
         
-        this.getChildren().addAll(statsBox, stackList);
-        System.out.println("new2");
+        registerBox.getChildren().addAll(statsBox, stackList);
+    }
+
+    @Override
+    public void update() {
+        //update register values
+        //registerValues[0].setText( (cpu.) );
     }
 }
