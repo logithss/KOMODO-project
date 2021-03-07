@@ -44,14 +44,9 @@ public class Cpu extends Device implements Clockable {
         3:get argument from addressing mode
         4:run instruction with argument
          */
-        //stackPointer = systembus.accessMemory().readByte((char)0);
-        stackPointer++;
-        flags[0] = !flags[1];
-        flags[1] = !flags[2];
-        flags[2] = flags[3];
-        flags[3] = !flags[0];
+        stackPointer = systembus.accessMemory().readByte((char)0);
 
-        /*byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
+        byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
         System.out.println((int) pc + " : " + OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
         //fetching argument from memory
@@ -136,7 +131,7 @@ public class Cpu extends Device implements Clockable {
 
         }
 
-        pc++;*/
+        pc++;
 
     }
 
