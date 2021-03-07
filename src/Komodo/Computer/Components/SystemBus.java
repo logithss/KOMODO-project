@@ -40,7 +40,7 @@ public class SystemBus implements Clockable{
     {
         reset();
         //this.apuClock.start();
-        //this.systemClock.start();
+        this.systemClock.start();
         //System.out.println("end?");
     }
     

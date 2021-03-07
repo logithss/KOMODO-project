@@ -11,12 +11,12 @@ package Komodo.Computer.Components;
  */
 public abstract class Clock extends Thread implements Runnable{
     
-    public boolean running;
-    private boolean halted;
+    public volatile boolean running;
+    public volatile boolean halted;
     public long cycleCount = 0;
     
     private double interupt = 0;
-    private static double lastTime = 0;
+    private static long timerLast = 0;
     public double debugDelay = 0;
     
     public Clock(String name) {
@@ -29,19 +29,15 @@ public abstract class Clock extends Thread implements Runnable{
         
         while(running)
         {
-            if(interupt <=0)
+            if((getTime()-timerLast) >= interupt)
             {
                 if(!halted){
-                    //System.out.println("***Clock cycle***");
+                    interupt = 0;
                     clockCycle();
-                    interupt =debugDelay;
+                    interupt += debugDelay;
+                    timerLast = getTime();
                     cycleCount++;
                 }
-            }
-            else
-            {
-                double deltaTime = ((getTime() - lastTime)/1000);
-                interupt-= deltaTime;
             }
         }
     }
@@ -56,11 +52,16 @@ public abstract class Clock extends Thread implements Runnable{
     public void haltClock()
     {
         this.halted = true;
-        System.out.println("halt after "+this.cycleCount+" cycles");
+    }
+    
+    public void toggleHalt()
+    {
+        this.halted = !this.halted;
     }
     
     public void stopClock()
     {
+        this.interupt = 0;
         this.running = false;
     }
     

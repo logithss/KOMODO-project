@@ -20,7 +20,7 @@ public class TitlePanel extends StackPane{
     
     private HBox titleBox;
     
-    TitlePanel(String title)
+    public TitlePanel(String title)
     {
         Label titleLabel = new Label(title);
         titleLabel.setPadding(new Insets(0, 2, 0, 2));
@@ -39,7 +39,7 @@ public class TitlePanel extends StackPane{
         //this.setMouseTransparent(true);
     }
     
-    protected void setPanel(Pane panel)
+    public void setPanel(Pane panel)
     {
         this.getChildren().clear();
         this.setAlignment(titleBox, Pos.TOP_LEFT);

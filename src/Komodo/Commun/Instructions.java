@@ -42,7 +42,13 @@ public class Instructions {
     
     //get instruction from its OpCode (operation code)
     public static Instruction getInstructionByOpcode(byte opcode){
+        try{
         return instructionsList.get(opcode);
+        }
+        catch(IndexOutOfBoundsException e)
+        {
+            return null;
+        }
     }
     
     //print the table and print an error message if OpCode doesn't match with intruction index in list

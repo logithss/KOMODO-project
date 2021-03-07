@@ -215,7 +215,7 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
     {
         if((startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index) <= 0xffff){
             byte byteValue = memory.readByte((char) (startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index));
-            byteValueLabel.setText(String.format("%02X", byteValue & 0x0FFFFF).toUpperCase());
+            byteValueLabel.setText(Integer.toString(Byte.toUnsignedInt(byteValue)).toUpperCase());
         }
         else
         {
@@ -223,7 +223,7 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         }
         if((startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index) <= 0xfffe){
             char wordValue = memory.readWord((char) (startPointer + labelArray[currentSelectedCellX][currentSelectedCellY].index));
-            wordValueLabel.setText(String.format("%04X", wordValue & 0x0FFFFF).toUpperCase());
+            wordValueLabel.setText(Integer.toString(wordValue).toUpperCase());
         }
         else
         {

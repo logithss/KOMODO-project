@@ -24,11 +24,12 @@ public class Cpu extends Device implements Clockable {
     byte X = 0;
     byte Y = 0;
     char pc = 0;
-    char stackStart = 0;
-    byte stackPointer = 2;
+    char stackStart = 0x00;
+    byte stackPointer = (byte)0x0;
     byte argumentFetched = 0;
     char newAddress;
     char newestAddress;
+    char displayPc=0;
     
     boolean[] flags = new boolean[4];
 
@@ -45,8 +46,14 @@ public class Cpu extends Device implements Clockable {
         4:run instruction with argument
          */
         stackPointer = systembus.accessMemory().readByte((char)0);
+        
+        flags[0] = !flags[1];
+        flags[1] = flags[2];
+        flags[2] = !flags[3];
+        flags[3] = flags[0];
+        pc++;
 
-        byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
+        /*byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
         System.out.println((int) pc + " : " + OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
         //fetching argument from memory
@@ -136,7 +143,8 @@ public class Cpu extends Device implements Clockable {
 
         }
 
-        pc++;
+        pc++;*/
+        displayPc = pc;
     }
 
     private void checkAllFlags() {
@@ -585,7 +593,7 @@ public class Cpu extends Device implements Clockable {
         }   
     }
     
-    public char getPC(){return this.pc;}
+    public char getPC(){return this.displayPc;}
     public byte getA(){return this.A;}
     public byte getX(){return this.X;}
     public byte getY(){return this.Y;}
@@ -594,7 +602,7 @@ public class Cpu extends Device implements Clockable {
     
     public char getStackStart() {return this.stackStart;}
     
-    public void setPC(char pc){this.pc = pc;}
+    public void setPC(char pc){this.pc = pc; this.displayPc = pc;}
     public void setA(byte a){this.A = a;}
     public void setX(byte x){this.X = x;}
     public void setY(byte y){this.Y = y;}

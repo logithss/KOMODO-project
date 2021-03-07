@@ -26,6 +26,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -60,6 +61,9 @@ public class Test2 extends Application {
         //memory view
         MemoryPanel memoryPanel = new MemoryPanel("Memory", systembus.accessMemory(), (char)0x00);
         
+        //disassembly view
+        DisassemblerPanel dissassemblerPanel = new DisassemblerPanel("Disassembler", systembus.accessCpu(), systembus.accessMemory());
+        
         //TEST ONLY memory flash panel
         /*Button flashButton = new Button("Open flash Window");
         flashButton.setOnAction(
@@ -70,17 +74,53 @@ public class Test2 extends Application {
                 }
             });*/
         
-     
-        VBox vbox = new VBox();
-        vbox.setPadding(new Insets(20));
-        vbox.setSpacing(20);
-        vbox.setAlignment(Pos.TOP_RIGHT);
-        vbox.getChildren().addAll(registerPanel, memoryPanel/*, flashButton*/);
-        //vbox.setMouseTransparent(true);
+        //upper panels
+        VBox upperPanels = new VBox();
+        upperPanels.setPadding(new Insets(20, 10, 20, 10));
+        upperPanels.setSpacing(20);
+        upperPanels.setAlignment(Pos.TOP_RIGHT);
+        upperPanels.getChildren().addAll(registerPanel, memoryPanel, dissassemblerPanel/*, flashButton*/);
+        
+        ScrollPane upperPanelsScroll = new ScrollPane();
+        upperPanelsScroll.setContent(upperPanels);
+        
+        //lower panels
+        /*VBox lowerPanelsBox = new VBox();
+        lowerPanelsBox.setPadding(new Insets(10));
+        lowerPanelsBox.setSpacing(20);
+        RegisterPanel registerPanel2 = new RegisterPanel("Registers", systembus.accessCpu(), systembus.accessMemory());
+        Button collapseButton = new Button("-");
+        collapseButton.setPrefSize(10, 10);
+        collapseButton.setOnAction(
+            new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(final ActionEvent e) {
+                    System.out.println("click");
+                    registerPanel2.setVisible(!registerPanel2.isVisible());
+                    registerPanel2.setManaged(registerPanel2.isVisible());
+                    collapseButton.setText(registerPanel2.isVisible() ? "-": "+");
+                }
+            });
+        lowerPanelsBox.getChildren().addAll(collapseButton, registerPanel2);
+        lowerPanelsBox.setStyle("-fx-border-color: black ;\n" +
+                            "    -fx-border-width: 1 ; \n" +
+                            "    -fx-border-style: solid");*
+        
+        TitlePanel lowerTitlePanel = new TitlePanel("Clock");
+        lowerTitlePanel.setPanel(lowerPanelsBox);*/
+        
+        ClockPanel clockPanel = new ClockPanel("Clock", systembus);
+        
+        VBox rightBox = new VBox();
+        rightBox.setPadding(new Insets(20));
+        rightBox.setSpacing(10);
+        rightBox.getChildren().addAll(upperPanelsScroll, clockPanel);
+        
         BorderPane root = new BorderPane();
         //root.setPadding(new Insets(20));
-        root.setRight(vbox);
+        root.setRight(rightBox);
         //root.setMouseTransparent(true);
+
         
         anim = new AnimationTimer() { //Game main loop
 
@@ -88,13 +128,14 @@ public class Test2 extends Application {
             public void handle(long l) {
                 registerPanel.update();
                 memoryPanel.update();
+                dissassemblerPanel.update();
             }
         };
         anim.start();
         
         Scene scene = new Scene(root, 520, 700);
         primaryStage.setOnCloseRequest(e -> {
-            e.consume();
+            //e.consume();
             closeApplication();
         });
         InputManager.init(scene);
@@ -119,8 +160,9 @@ public class Test2 extends Application {
         //System.exit(0);
         //systembus.powerOff();
         systembus.powerOff();
-        //anim.stop();
-        //window.close();
+        System.out.println("******* alive?: "+systembus.accessSystemClock().isAlive());
+        anim.stop();
+        window.close();
         //System.gc();
         Platform.exit();
     }

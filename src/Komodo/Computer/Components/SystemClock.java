@@ -23,6 +23,7 @@ public class SystemClock extends Clock{
     public SystemClock(String name, Clockable... clockables) {
         super(name);
         clockablesList.addAll(Arrays.asList(clockables));
+        //System.out.println("*****clock name: "+name+ "; cycle*****");
     }
 
     @Override

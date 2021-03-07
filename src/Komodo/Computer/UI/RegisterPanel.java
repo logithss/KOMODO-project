@@ -39,8 +39,7 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
     {
         super(title);
         this.cpu = cpu;
-        stackHandeler = new ListViewHandeler(memory, cpu.getStackStart(), (char) (cpu.getStackStart()+0xff), stackSize);
-        stackHandeler.curentIsMiddle = true;
+        stackHandeler = new ListViewHandeler(memory, cpu.getStackStart(), (char) (cpu.getStackStart()+0xff), stackSize, 2);
         construct();
         update();
     }
@@ -146,7 +145,7 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         ListView stackView = new ListView();
         //stackView.setPrefWidth(100);
         stackView.setPrefHeight(150);
-        stackView.setMouseTransparent( true );
+        //stackView.setMouseTransparent( true );
         stackView.setFocusTraversable( false );
         
         
@@ -188,28 +187,19 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
             flagValues[i].setTextFill(flags[i] ? Color.GREEN : Color.RED);
         
         //update stack
-        if(stackHandeler.curentIsMiddle){
-            stackItems.get((stackSize/2)).setStyle("-fx-background-color: black");
-            stackItems.get((stackSize/2)).setTextFill(Color.WHITE);
-        }
-        else
-        {
-            stackItems.get(0).setStyle("-fx-background-color: black");
-            stackItems.get(0).setTextFill(Color.WHITE);
-        }
+        stackItems.get(-stackHandeler.index).setStyle("-fx-background-color: blue");
+        stackItems.get(-stackHandeler.index).setTextFill(Color.WHITE);
         
                 
         char stackViewStart = (char) (cpu.getStackStart()+Byte.toUnsignedInt(cpu.getStackPointer()));
         byte[] values = stackHandeler.fetchValues(stackViewStart);
-        int offset = 0;
-        if(stackHandeler.curentIsMiddle)
-            offset = -(stackSize/2);
+        int offset = stackHandeler.index;
         
         for(int i = 0; i < values.length; i++)
         {
             byte fetchedValue = values[i];
             String valueText = String.format("%02X",fetchedValue);
-            String addressText = String.format("%02X",stackViewStart+i+offset);
+            String addressText = String.format("%04X",stackViewStart+i+offset);
             
             if(fetchedValue == 100){
                 valueText = "--";
