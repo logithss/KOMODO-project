@@ -9,8 +9,12 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +29,7 @@ import javafx.scene.input.KeyEvent;
 
 public class InputManager {
     
-    private static TreeMap<KeyCode, Integer> keyMap = new TreeMap<>();
+    private static volatile TreeMap<KeyCode, Integer> keyMap = new TreeMap<>();
     
     private static KeyCode latestCode;
     
@@ -40,31 +44,28 @@ public class InputManager {
         scene.setOnKeyReleased(new EventHandler<KeyEvent>(){
             @Override
             public void handle(KeyEvent key) {
-                if(keyMap.containsKey(key.getCode()))
-                    keyMap.remove(key.getCode());
+                synchronized(keyMap) {
+                    if(keyMap.containsKey(key.getCode()))
+                        keyMap.remove(key.getCode());
+                }
             }
         });
         
         scene.setOnKeyTyped(new EventHandler<KeyEvent>(){
             @Override
             public void handle(KeyEvent key) {
+                synchronized(keyMap) {
                 keyMap.put(latestCode, (int)key.getCharacter().charAt(0));
+                }
             }
         });
         
     }
     
-    public static Iterator<Integer> getKeyPressed()
+    public static synchronized Map<KeyCode, Integer> getKeyPressed()
     {
-        return keyMap.values().iterator();
+        synchronized(keyMap) {
+            return Collections.synchronizedMap(keyMap);
+        }
     }
-//    public static boolean keyPressed(KeyCode keyName)
-//    {
-//        if(keyMap.containsKey(keyName))
-//        {
-//            return keyMap.get(keyName);
-//        }
-//        else
-//            return false;
-//    }
 }

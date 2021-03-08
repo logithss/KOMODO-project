@@ -1,5 +1,23 @@
-lda x$e5
-sTA !%10110
+:incY
+clo
+iny
+bcr incX
+jmp incY
+
+:incX
+clo
+inx
+bcr incA
+jmp incY
+
+:incA
+clo
+inc
+bcr END
+jmp incY
+
+:END
+lda #$FF
+ldx #$FF
+ldy #$FF
 brk
-*15
-ldx #45

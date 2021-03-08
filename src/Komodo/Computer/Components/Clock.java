@@ -25,7 +25,8 @@ public abstract class Clock extends Thread implements Runnable{
     
     public void run(){
         this.running = true;
-        this.halted = false;
+        //this.halted = false;
+        interupt = debugDelay;
         
         while(running)
         {

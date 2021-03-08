@@ -79,9 +79,11 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
             //to remove focus from address spinner
             grid.requestFocus();
             //System.out.println(newValue);
-            int value = (int)newValue;
-            memStart.getValueFactory().setValue(value - value % 16);
-            update( (int)(value - value % 16) );
+            if(newValue != null){
+                int value = (int)newValue;
+                memStart.getValueFactory().setValue(value - value % 16);
+                update( (int)(value - value % 16) );
+            }
         });
         
         

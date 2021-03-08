@@ -66,21 +66,21 @@ public class Test2 extends Application {
         DisassemblerPanel dissassemblerPanel = new DisassemblerPanel("Disassembler", systembus.accessCpu(), systembus.accessMemory());
         
         //TEST ONLY memory flash panel
-        /*Button flashButton = new Button("Open flash Window");
+        Button flashButton = new Button("Open flash Window");
         flashButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(final ActionEvent e) {
                     openMemoryFlashWindow();
                 }
-            });*/
+            });
         
         //upper panels
         VBox upperPanels = new VBox();
         upperPanels.setPadding(new Insets(20, 10, 20, 10));
         upperPanels.setSpacing(20);
         upperPanels.setAlignment(Pos.TOP_RIGHT);
-        upperPanels.getChildren().addAll(registerPanel, memoryPanel, dissassemblerPanel/*, flashButton*/);
+        upperPanels.getChildren().addAll(registerPanel, memoryPanel, dissassemblerPanel, flashButton);
         
         ScrollPane upperPanelsScroll = new ScrollPane();
         upperPanelsScroll.setPrefWidth(525);
@@ -131,6 +131,7 @@ public class Test2 extends Application {
                 registerPanel.update();
                 memoryPanel.update();
                 dissassemblerPanel.update();
+                clockPanel.update();
             }
         };
         anim.start();
@@ -144,7 +145,7 @@ public class Test2 extends Application {
         TextField field = new TextField();
         Label keys = new Label("a");
         rightBox.getChildren().addAll(keys, field);
-        InputManager.init(field); //temp root
+        InputManager.init(rightBox); //temp root
         primaryStage.setTitle("Hello World!");
         primaryStage.setScene(scene);
         primaryStage.show();

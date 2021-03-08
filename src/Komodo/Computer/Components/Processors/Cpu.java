@@ -49,7 +49,7 @@ public class Cpu extends Device implements Clockable {
         
    
         byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
-        System.out.println((int) pc + " : " + OPcode);
+        //System.out.println((int) pc + " : " + OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
         
         switch (instruction.addressingMode) {
@@ -181,7 +181,7 @@ public class Cpu extends Device implements Clockable {
     
     private void absoluteX(){
         pc++;
-        newAddress = systembus.accessMemory().readWord((char)(pc + X));
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + X);
         argumentFetched = systembus.accessMemory().readByte(newAddress);
 
         pc++;
@@ -189,9 +189,9 @@ public class Cpu extends Device implements Clockable {
     
        private void absoluteY(){
         pc++;
-        newAddress = systembus.accessMemory().readWord((char)(pc + Y));
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Y);
         argumentFetched = systembus.accessMemory().readByte(newAddress);
-        Y = argumentFetched;
+        //Y = argumentFetched;
         
         pc++;
     }
@@ -210,7 +210,7 @@ public class Cpu extends Device implements Clockable {
        private void indirectX(){
            
         pc++;
-        newAddress = systembus.accessMemory().readWord((char)(pc + X));
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + X);
         newestAddress = systembus.accessMemory().readWord(newAddress);
         argumentFetched = systembus.accessMemory().readByte(newestAddress);
         
@@ -230,7 +230,6 @@ public class Cpu extends Device implements Clockable {
         
         int result = Byte.toUnsignedInt(a) + Byte.toUnsignedInt(b);
          if(result >= 256){
-             
             flags[0] = true;
         } 
     }
@@ -278,7 +277,9 @@ public class Cpu extends Device implements Clockable {
         
         A++;
 
-      
+        if (A ==0){
+              flags[3]=true;
+        }
         // if register overflowed
         // if register negative
         // if register zero
@@ -287,11 +288,17 @@ public class Cpu extends Device implements Clockable {
     private void inx() {
         ifOverflowed(X, (byte)1);
         X++;
+        if (X ==0){
+              flags[3]=true;
+        }
     }
 
     private void iny() {
         ifOverflowed(Y, (byte)1);
         Y++;
+        if (Y ==0){
+              flags[3]=true;
+        }
     }
 
     private void dec() {
@@ -381,51 +388,51 @@ public class Cpu extends Device implements Clockable {
 
     private void bnz() {
 
-        if (flags[3] = false) {
+        if (flags[3] == false) {
             pc = newAddress;
+            pc--;
         }
-        pc--;
     }
 
     private void bzr() {
 
-        if (flags[3] = true) {
+        if (flags[3] == true) {
             pc = newAddress;
+            pc--;
         }
-        pc--;
     }
 
     private void bcr() {
 
-        if (flags[0] = true) {
+        if (flags[0] == true) {
             pc = newAddress;
+            pc--;
         }
-        pc--;
     }
 
     private void bng() {
 
-        if (flags[1] = true) {
+        if (flags[1] == true) {
             pc = newAddress;
+            pc--;
         }
-        pc--;
     }
 
     private void bbg() {
 
-        if (flags[2] = true) {
+        if (flags[2] == true) {
             pc = newAddress;
+            pc--;
         }
-        pc--;
     }
 
     private void bsl() {
 
         //question if smaller  = is bigger explicitly false?
-        if (flags[2] = true) {
+        if (flags[2] == true) {
             pc = newAddress;
+            pc--;
         }
-        pc--;
 
     }
 
@@ -733,6 +740,21 @@ public class Cpu extends Device implements Clockable {
     public void setFlag(int index, boolean value){
         if(index < flags.length)
             flags[index]=value;
+    }
+    
+    public void reset()
+    {
+        this.A = 0;
+        this.X = 0;
+        this.Y = 0;
+        this.pc = 0;
+        this.displayPc = pc;
+        this.stackPointer = 0;
+        
+        for(int i =0; i<flags.length; i++)
+            flags[i] = false;
+        
+        System.out.println("flag n: "+flags[1]);
     }
 
 }

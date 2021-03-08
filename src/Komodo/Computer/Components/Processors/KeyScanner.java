@@ -9,7 +9,10 @@ import Komodo.Computer.Components.Clockable;
 import Komodo.Computer.Components.Device;
 import Komodo.Computer.Components.SystemBus;
 import Komodo.Computer.InputManager;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import javafx.scene.input.KeyCode;
 
 /**
  *
@@ -17,7 +20,7 @@ import java.util.Iterator;
  */
 public class KeyScanner extends Device implements Clockable{
     
-    private char keybordRegisterStart = 0x10;
+    private char keybordRegisterStart = 0x20;
     
     public KeyScanner(SystemBus systemBus) {
         super(systemBus);
@@ -30,17 +33,16 @@ public class KeyScanner extends Device implements Clockable{
     
     private void updateMemory()
     {
-        //System.out.println("scan");
-        Iterator<Integer> keys = InputManager.getKeyPressed();
+        Map<KeyCode, Integer> keys = InputManager.getKeyPressed();
+        Iterator<Integer> ite = keys.values().iterator();
         byte count = 0;
-        
-        while(keys.hasNext()){
-            systembus.accessMemory().writeByte( (char) (keybordRegisterStart+count+1), keys.next().byteValue());
-            count++;
+        synchronized(keys) {
+            while(ite.hasNext()){
+                systembus.accessMemory().writeByte( (char) (keybordRegisterStart+count+1), ite.next().byteValue());
+                count++;
+                }
         }
         systembus.accessMemory().writeByte(keybordRegisterStart, count);
-        
-        
     }
     
 }

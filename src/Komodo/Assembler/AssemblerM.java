@@ -35,6 +35,9 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
@@ -73,6 +76,45 @@ public class AssemblerM extends Application {
         ScrollPane sp = new ScrollPane();
         //sp.setPadding(new Insets(100, 100, 10, 0));
         sp.setContent(fileVBox);
+        
+        //drag&drop code for files
+        sp.setOnDragOver(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                if (event.getGestureSource() != sp
+                        && event.getDragboard().hasFiles()) {
+                    /* allow for both copying and moving, whatever user chooses */
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+                event.consume();
+            }
+        });
+
+        sp.setOnDragDropped(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (db.hasFiles()) {
+                    for(File f : db.getFiles())
+                    {
+                        createFileItem(f);
+                    }
+                    //dropped.setText(db.getFiles().toString());
+                    success = true;
+                }
+                /* let the source know whether the string was successfully 
+                 * transferred and used */
+                event.setDropCompleted(success);
+
+                event.consume();
+            }
+        });
+        
+        
+        
         fileVBox.setSpacing(5);
         
         fileChooser = new FileChooser();
@@ -86,17 +128,7 @@ public class AssemblerM extends Application {
                     List <File> files = fileChooser.showOpenMultipleDialog(primaryStage);
                     if(files != null && files.size() >0){
                         for(File file : files){
-                            FileItem fileItem = new FileItem(file);
-                            Button removeButton = new Button("X");
-                            removeButton.setOnAction(
-                            new EventHandler<ActionEvent>() {
-                                @Override
-                                public void handle(final ActionEvent e) {
-                                    removeFileItem(fileItem);
-                                }
-                            });
-                            fileItem.getChildren().add(removeButton);
-                            fileVBox.getChildren().addAll(fileItem);
+                            createFileItem(file);
                         }
                     }
                 }
@@ -157,6 +189,41 @@ public class AssemblerM extends Application {
         outputBox.setSpacing(5);
         outputBox.getChildren().addAll(outputLabel, outputButton);
         
+        
+        //drag&drop code for output
+        outputBox.setOnDragOver(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                if (event.getGestureSource() != sp
+                        && event.getDragboard().hasFiles()) {
+                    /* allow for both copying and moving, whatever user chooses */
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+                event.consume();
+            }
+        });
+
+        outputBox.setOnDragDropped(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (db.hasFiles()) {
+                    outputPath = db.getFiles().get(0).getAbsolutePath();
+                    outputLabel.setText(""+outputPath);
+                    //dropped.setText(db.getFiles().toString());
+                    success = true;
+                }
+                /* let the source know whether the string was successfully 
+                 * transferred and used */
+                event.setDropCompleted(success);
+
+                event.consume();
+            }
+        });
+        
         VBox bottomBox = new VBox();
         bottomBox.setSpacing(5);
         bottomBox.getChildren().addAll(outputBox, console);
@@ -169,6 +236,21 @@ public class AssemblerM extends Application {
         primaryStage.setMinWidth(600);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    private void createFileItem(File file)
+    {
+        FileItem fileItem = new FileItem(file);
+        Button removeButton = new Button("X");
+        removeButton.setOnAction(
+        new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(final ActionEvent e) {
+                removeFileItem(fileItem);
+            }
+        });
+        fileItem.getChildren().add(removeButton);
+        fileVBox.getChildren().addAll(fileItem);
     }
     
     private void assembleFiles()

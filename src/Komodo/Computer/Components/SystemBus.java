@@ -41,6 +41,7 @@ public class SystemBus implements Clockable{
     {
         reset();
         //this.apuClock.start();
+        this.systemClock.haltClock();
         this.systemClock.start();
         //System.out.println("end?");
     }
@@ -53,7 +54,7 @@ public class SystemBus implements Clockable{
     
     public void reset()
     {
-        //reset behavior of computer
+        cpu.reset();
     }
     
     @Override

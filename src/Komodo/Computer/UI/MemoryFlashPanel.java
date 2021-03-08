@@ -19,6 +19,9 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -87,6 +90,40 @@ public class MemoryFlashPanel extends VBox{
         //combine all elements into root
         this.getChildren().addAll(fileBox, positionBox,flashBox);
         this.setSpacing(5);
+        
+        //drag&drop code
+        this.setOnDragOver(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                if (event.getGestureSource() != this
+                        && event.getDragboard().hasFiles()) {
+                    /* allow for both copying and moving, whatever user chooses */
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+                event.consume();
+            }
+        });
+
+        this.setOnDragDropped(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (db.hasFiles()) {
+                    setFile(db.getFiles().get(0));
+                    fileName.setText(db.getFiles().get(0).getName());
+                    //dropped.setText(db.getFiles().toString());
+                    success = true;
+                }
+                /* let the source know whether the string was successfully 
+                 * transferred and used */
+                event.setDropCompleted(success);
+
+                event.consume();
+            }
+        });
     }
     
     private void setFile(File file){this.file = file;}

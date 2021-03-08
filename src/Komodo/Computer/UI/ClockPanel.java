@@ -20,10 +20,12 @@ import javafx.scene.layout.VBox;
 public class ClockPanel extends TitlePanel implements UIPanel{
 
     private SystemBus systembus;
+    private Button playButton;
     
     public ClockPanel(String title, SystemBus systembus) {
         super(title);
         this.systembus = systembus;
+        systembus.accessSystemClock().haltClock();
         construct();
     }
     
@@ -33,40 +35,46 @@ public class ClockPanel extends TitlePanel implements UIPanel{
         HBox buttonBox = new HBox();
         buttonBox.setSpacing(10);
         
-        Button playButton = new Button("halt");
+        playButton = new Button("halt");
         boolean a = false;
         playButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(final ActionEvent e) {
-                    if(systembus.accessSystemClock().halted)
+                    if(systembus.accessSystemClock().halted){
                         systembus.accessSystemClock().resumeClock();
+                        //playButton.setText("Halt");
+                    }
                     else
+                    {
                         systembus.accessSystemClock().haltClock();
+                        //playButton.setText("Resume");
+                    }   
                     
-                    systembus.accessSystemClock().debugDelay = 100;
-                    playButton.setText(systembus.accessSystemClock().halted ? "resume": "halt");
+                    //systembus.accessSystemClock().debugDelay = 10;
+                    //playButton.setText(systembus.accessSystemClock().halted ? "resume": "halt");
                 }
             });
         
-        Button powerButton = new Button("On");
+        Button powerButton = new Button("reset");
         powerButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(final ActionEvent e) {
-                    //power On/Off
+                    systembus.reset();
                 }
             });
+        
         Button stepButton = new Button("Step");
         stepButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(final ActionEvent e) {
-                    //step
+                    systembus.accessSystemClock().stepClock();
                 }
             });
         
-        buttonBox.getChildren().addAll(playButton);
+        buttonBox.getChildren().addAll(playButton, stepButton, powerButton);
         
         root.getChildren().addAll(buttonBox);
         root.setStyle("-fx-border-color: black ;\n" +
@@ -78,7 +86,7 @@ public class ClockPanel extends TitlePanel implements UIPanel{
 
     @Override
     public void update() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        playButton.setText(systembus.accessSystemClock().halted ? "resume": "halt");
     }
     
 }

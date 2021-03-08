@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author child
  */
-public class AssemblerMain {
+public class Test {
     
     public static void main(String[] args){
         byte a = (byte)0xff;

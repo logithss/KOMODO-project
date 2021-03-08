@@ -6,7 +6,7 @@
 LDY 200 ;load the number at address 200 into Y (our starting value. If 3, program starts generating the square of 3 and keep going from there)
 
 :new_loop
-STY 100 ;store Y at 100
+STY $d0 ;store Y at 100
 TYA ;copy Y to A
 TAX ;copy A to X
 CLZ ;clear the zero flag and overflow flag
@@ -15,11 +15,11 @@ CLO
 :loop
 DEX ;decrement X
 BZR completed ;branch to label completed if zero flag is set
-ADD 100 ;if not, add value at 100 to A
+ADD $d0 ;if not, add value at 100 to A
 JMP loop ;jump to the loop label
 
 :completed
-STA y100 ;store A at 100 plus Y index (basically store at (100+y) ) 
+STA y$d0 ;store A at 100 plus Y index (basically store at (100+y) ) 
 BCR overflow_end ;branch to label overflow_end if the overflow flag is set
 INY ;increment Y
 JMP new_loop ;jump to new_loop label
