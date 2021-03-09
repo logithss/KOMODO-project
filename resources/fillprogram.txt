@@ -1,0 +1,8 @@
+:start
+inx
+bcr end
+stx x$10
+jmp start
+
+:end
+brk
