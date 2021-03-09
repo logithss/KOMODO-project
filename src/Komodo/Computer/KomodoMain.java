@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -22,10 +23,15 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
@@ -37,6 +43,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -46,7 +54,7 @@ import javafx.stage.StageStyle;
  *
  * @author child
  */
-public class Test2 extends Application {
+public class KomodoMain extends Application {
     
     static SystemBus systembus;
     private Stage window;
@@ -65,63 +73,45 @@ public class Test2 extends Application {
         //disassembly view
         DisassemblerPanel dissassemblerPanel = new DisassemblerPanel("Disassembler", systembus.accessCpu(), systembus.accessMemory());
         
-        //TEST ONLY memory flash panel
-        Button flashButton = new Button("Open flash Window");
-        flashButton.setOnAction(
-            new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(final ActionEvent e) {
-                    openMemoryFlashWindow();
-                }
-            });
+        //control panel
+        ControlPanel clockPanel = new ControlPanel("Control", systembus);
         
         //upper panels
         VBox upperPanels = new VBox();
         upperPanels.setPadding(new Insets(20, 10, 20, 10));
         upperPanels.setSpacing(20);
         upperPanels.setAlignment(Pos.TOP_RIGHT);
-        upperPanels.getChildren().addAll(registerPanel, memoryPanel, dissassemblerPanel, flashButton);
+        upperPanels.getChildren().addAll(registerPanel, memoryPanel, dissassemblerPanel);
         
         ScrollPane upperPanelsScroll = new ScrollPane();
         upperPanelsScroll.setPrefWidth(525);
         upperPanelsScroll.setContent(upperPanels);
-        
-        //lower panels
-        /*VBox lowerPanelsBox = new VBox();
-        lowerPanelsBox.setPadding(new Insets(10));
-        lowerPanelsBox.setSpacing(20);
-        RegisterPanel registerPanel2 = new RegisterPanel("Registers", systembus.accessCpu(), systembus.accessMemory());
-        Button collapseButton = new Button("-");
-        collapseButton.setPrefSize(10, 10);
-        collapseButton.setOnAction(
-            new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(final ActionEvent e) {
-                    System.out.println("click");
-                    registerPanel2.setVisible(!registerPanel2.isVisible());
-                    registerPanel2.setManaged(registerPanel2.isVisible());
-                    collapseButton.setText(registerPanel2.isVisible() ? "-": "+");
-                }
-            });
-        lowerPanelsBox.getChildren().addAll(collapseButton, registerPanel2);
-        lowerPanelsBox.setStyle("-fx-border-color: black ;\n" +
-                            "    -fx-border-width: 1 ; \n" +
-                            "    -fx-border-style: solid");*
-        
-        TitlePanel lowerTitlePanel = new TitlePanel("Clock");
-        lowerTitlePanel.setPanel(lowerPanelsBox);*/
-        
-        ClockPanel clockPanel = new ClockPanel("Clock", systembus);
         
         VBox rightBox = new VBox();
         rightBox.setPadding(new Insets(20));
         rightBox.setSpacing(10);
         rightBox.getChildren().addAll(upperPanelsScroll, clockPanel);
         
+        Menu menu1 = new Menu("Computer");
+        MenuItem menuItem1 = new MenuItem("Open flash window");
+        menuItem1.setOnAction(e -> {
+            openMemoryFlashWindow();
+        });
+        menu1.getItems().add(menuItem1);
+        MenuBar menuBar = new MenuBar();
+        menuBar.getMenus().add(menu1);
+        
+        //render canvas
+        float ratio = 1.6f;
+        int width = 1280;
+        Canvas renderCanvas = new Canvas(width, width/ratio);
+        GraphicsContext gc = renderCanvas.getGraphicsContext2D();
+        systembus.accessPpu().setGC(gc);
+        
         BorderPane root = new BorderPane();
-        //root.setPadding(new Insets(20));
         root.setRight(rightBox);
-        //root.setMouseTransparent(true);
+        root.setTop(menuBar);
+        root.setCenter(renderCanvas);
 
         
         anim = new AnimationTimer() { //Game main loop
@@ -142,11 +132,9 @@ public class Test2 extends Application {
             closeApplication();
         });
         
-        TextField field = new TextField();
-        Label keys = new Label("a");
-        rightBox.getChildren().addAll(keys, field);
+        //initiate input manager
         InputManager.init(rightBox); //temp root
-        primaryStage.setTitle("Hello World!");
+        primaryStage.setTitle("Komodo emulator v1.0");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -154,6 +142,7 @@ public class Test2 extends Application {
     public void openMemoryFlashWindow()
     {
         final Stage dialog = new Stage();
+        dialog.setTitle("Flash menu");
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setResizable(false);
         dialog.initStyle(StageStyle.UNIFIED);

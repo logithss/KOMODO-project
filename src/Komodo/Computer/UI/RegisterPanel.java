@@ -165,9 +165,6 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         stackBox.getChildren().addAll(stackTitle, stackView);
         
         registerBox.getChildren().addAll(statsBox, stackBox);
-        registerBox.setStyle("-fx-border-color: black ;\n" +
-                            "    -fx-border-width: 1 ; \n" +
-                            "    -fx-border-style: solid");
         
         super.setPanel(registerBox);
     }

@@ -706,7 +706,7 @@ public class Cpu extends Device implements Clockable {
     
     private void dly(){
         
-        systembus.accessSystemClock().setInteruptTime(10);
+        systembus.accessSystemClock().setInteruptTime(Byte.toUnsignedInt(argumentFetched)*10);
     }
 
     private void rng() {
@@ -753,8 +753,6 @@ public class Cpu extends Device implements Clockable {
         
         for(int i =0; i<flags.length; i++)
             flags[i] = false;
-        
-        System.out.println("flag n: "+flags[1]);
     }
 
 }

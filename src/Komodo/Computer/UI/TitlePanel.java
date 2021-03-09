@@ -44,5 +44,12 @@ public class TitlePanel extends StackPane{
         this.getChildren().clear();
         this.setAlignment(titleBox, Pos.TOP_LEFT);
         this.getChildren().addAll(panel, titleBox);
+        
+        
+        panel.setStyle("-fx-border-color: black ;\n" +
+                            "    -fx-border-width: 1 ; \n" +
+                            "    -fx-border-style: solid;" +
+                            "-fx-border-radius: 18 18 18 18;"+
+                            "-fx-background-radius: 0 0 18 18;");
     }
 }

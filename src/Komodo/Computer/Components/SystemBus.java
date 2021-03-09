@@ -20,6 +20,8 @@ public class SystemBus implements Clockable{
     private SystemClock systemClock;
     private SystemClock apuClock;
     
+    public boolean on;
+    
     public SystemBus()
     {
         this.memory = new Memory(this);
@@ -39,17 +41,21 @@ public class SystemBus implements Clockable{
     
     public void powerOn()
     {
+        on = true;
         reset();
         //this.apuClock.start();
         this.systemClock.haltClock();
         this.systemClock.start();
-        //System.out.println("end?");
     }
     
     public void powerOff()
     {
+        on = false;
         apuClock.stopClock();
         systemClock.stopClock();
+        
+        systemClock = new SystemClock("System Clock", this);
+        apuClock = new SystemClock("APU Clock", apu);
     }
     
     public void reset()

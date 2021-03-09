@@ -173,9 +173,6 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         memoryBox.setSpacing(10);
         memoryBox.getChildren().addAll(controls, separator, grid);
         memoryBox.setPadding(new Insets(10, 10, 10, 10));
-        memoryBox.setStyle(          "-fx-border-color: black ;\n" +
-                                "    -fx-border-width: 1 ; \n" +
-                                "    -fx-border-style: solid");
         this.setPanel(memoryBox);
         
     }

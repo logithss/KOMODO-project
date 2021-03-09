@@ -53,7 +53,7 @@ import javafx.stage.Stage;
  *
  * @author child
  */
-public class AssemblerM extends Application {
+public class AssemblerMain extends Application {
     private Assembler assembler;
     private Stage window;
     private FileChooser fileChooser;
@@ -156,16 +156,12 @@ public class AssemblerM extends Application {
         root.setMargin(sp, new Insets(10));
         root.setCenter(sp);
         
-        Menu menu1 = new Menu("Menu 1");
-        MenuBar menuBar = new MenuBar();
-        menuBar.getMenus().add(menu1);
-        
         HBox buttonBox = new HBox();
         buttonBox.setSpacing(5);
         buttonBox.getChildren().addAll(newFileButton, assembleButton, helpButton);
         VBox topBox = new VBox();
         topBox.setSpacing(5);
-        topBox.getChildren().addAll(menuBar, buttonBox);
+        topBox.getChildren().addAll(buttonBox);
         root.setTop(topBox);
         
         //console

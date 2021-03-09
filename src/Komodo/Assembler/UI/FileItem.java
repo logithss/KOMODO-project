@@ -5,7 +5,7 @@
  */
 package Komodo.Assembler.UI;
 
-import Komodo.Assembler.AssemblerM;
+import Komodo.Assembler.AssemblerMain;
 import java.io.File;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

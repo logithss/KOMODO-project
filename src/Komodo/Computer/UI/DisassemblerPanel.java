@@ -68,9 +68,6 @@ public class DisassemblerPanel extends TitlePanel implements UIPanel{
         rootBox.setPadding(new Insets(10));
         rootBox.setSpacing(20);
         rootBox.getChildren().addAll(codeView);
-        rootBox.setStyle("-fx-border-color: black ;\n" +
-                            "    -fx-border-width: 1 ; \n" +
-                            "    -fx-border-style: solid");
         super.setPanel(rootBox);
     }
 
