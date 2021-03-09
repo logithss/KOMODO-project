@@ -181,22 +181,23 @@ public class Cpu extends Device implements Clockable {
     
     private void absoluteX(){
         pc++;
-        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + X);
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(X));
+        System.out.println(Integer.toBinaryString(newAddress));
         argumentFetched = systembus.accessMemory().readByte(newAddress);
 
         pc++;
     }
     
-       private void absoluteY(){
+    private void absoluteY(){
         pc++;
-        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Y);
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(Y));
         argumentFetched = systembus.accessMemory().readByte(newAddress);
         //Y = argumentFetched;
         
         pc++;
     }
        
-         private void indirect(){
+    private void indirect(){
         
         pc++;
         newAddress = systembus.accessMemory().readWord(pc);
@@ -207,16 +208,13 @@ public class Cpu extends Device implements Clockable {
         pc++;
     }
        
-       private void indirectX(){
-           
+    private void indirectX(){
         pc++;
-        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + X);
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(X));
         newestAddress = systembus.accessMemory().readWord(newAddress);
         argumentFetched = systembus.accessMemory().readByte(newestAddress);
-        
-       
         pc++;
-       }
+    }
        
 
 

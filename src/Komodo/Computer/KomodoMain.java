@@ -118,6 +118,7 @@ public class KomodoMain extends Application {
 
             @Override
             public void handle(long l) {
+                systembus.accessPpu().clock();
                 registerPanel.update();
                 memoryPanel.update();
                 dissassemblerPanel.update();

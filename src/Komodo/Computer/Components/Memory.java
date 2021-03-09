@@ -18,7 +18,8 @@ public class Memory extends Device{
     public Memory(SystemBus systemBus) {
         super(systemBus);
         memory = new byte[65536];
-        memory[0] = 0x0d;
+        
+        memory[0] = 0x3;
         memory[1] = 0x6d;
         memory[2] = (byte)0x00;
         memory[3] = (byte)0x36;
