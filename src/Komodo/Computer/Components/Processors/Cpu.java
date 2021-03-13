@@ -31,7 +31,7 @@ public class Cpu extends Device implements Clockable {
     char newestAddress;
     char displayPc=0;
     
-    boolean[] flags = new boolean[4];
+    boolean[] flags = new boolean[4];//CNBZ
 
     public Cpu(SystemBus systembus) {
         super(systembus);
@@ -201,8 +201,8 @@ public class Cpu extends Device implements Clockable {
         
         pc++;
         newAddress = systembus.accessMemory().readWord(pc);
-        newestAddress = systembus.accessMemory().readWord(newAddress);
-        argumentFetched = systembus.accessMemory().readByte(newestAddress);
+        newAddress = systembus.accessMemory().readWord(newAddress);
+        argumentFetched = systembus.accessMemory().readByte(newAddress);
         
        
         pc++;
@@ -210,9 +210,14 @@ public class Cpu extends Device implements Clockable {
        
     private void indirectX(){
         pc++;
-        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(X));
-        newestAddress = systembus.accessMemory().readWord(newAddress);
-        argumentFetched = systembus.accessMemory().readByte(newestAddress);
+        System.out.println("pc: "+(int)pc);
+        newAddress = systembus.accessMemory().readWord(pc);
+        System.out.println("new address1: "+Integer.toHexString(newAddress));
+        //newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(X));
+        newAddress = systembus.accessMemory().readWord(newAddress);
+        System.out.println("new address2: "+Integer.toHexString(newAddress));
+        argumentFetched = systembus.accessMemory().readByte( (char)(newAddress+ Byte.toUnsignedInt(X)) );
+        System.out.println("argument fetched: "+Integer.toHexString(argumentFetched));
         pc++;
     }
        
@@ -252,7 +257,10 @@ public class Cpu extends Device implements Clockable {
         
         ifOverflowed(A, argumentFetched);
         A += argumentFetched;
-      
+        
+        if(A==0){
+            flags[3] = true;
+        }
         
     }
 
@@ -434,8 +442,13 @@ public class Cpu extends Device implements Clockable {
 
     }
 
-    private void cmp() {
+    private void cmp() {//CNBZ
 
+        /*
+        A equal:B-> FALSE Z-> TRUE
+        A bigger:B-> TRUE Z-> FALSE
+        A smaller:B-> FALSE Z-> FALSE
+        */
         int val = Byte.compare(A, argumentFetched);
 
         if (val == 0) {

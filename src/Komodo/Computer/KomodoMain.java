@@ -97,7 +97,12 @@ public class KomodoMain extends Application {
         menuItem1.setOnAction(e -> {
             openMemoryFlashWindow();
         });
-        menu1.getItems().add(menuItem1);
+        MenuItem menuItem2 = new MenuItem("Open number coverter window");
+        menuItem2.setOnAction(e -> {
+            openNumberConverterWindow();
+        });
+        
+        menu1.getItems().addAll(menuItem1, menuItem2);
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().add(menu1);
         
@@ -143,12 +148,27 @@ public class KomodoMain extends Application {
     public void openMemoryFlashWindow()
     {
         final Stage dialog = new Stage();
-        dialog.setTitle("Flash menu");
-        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Flash memory");
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.setAlwaysOnTop(true);
         dialog.setResizable(false);
         dialog.initStyle(StageStyle.UNIFIED);
-        dialog.initOwner(window);
+        dialog.initOwner(null);
         Scene panel = new Scene(new MemoryFlashPanel(systembus.accessMemory(), window), 400, 200);
+        dialog.setScene(panel);
+        dialog.show();
+    }
+    
+    public void openNumberConverterWindow()
+    {
+        final Stage dialog = new Stage();
+        dialog.setTitle("Number Converter");
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.setAlwaysOnTop(true);
+        dialog.setResizable(false);
+        dialog.initStyle(StageStyle.UNIFIED);
+        dialog.initOwner(null);
+        Scene panel = new Scene(new NumberConverterPanel(window), 400, 200);
         dialog.setScene(panel);
         dialog.show();
     }

@@ -94,7 +94,7 @@ public class Apu extends Device implements Clockable{
     {
         //System.out.println("new music note : "+x);
         Random rng = new Random();
-        for( int i = 0; i < 50 * (float )44100 / 1000; i++ ) {
+        for( int i = 0; i < 150 * (float )44100 / 1000; i++ ) {
             
             double t;
             if(x <= 78)
@@ -106,34 +106,13 @@ public class Apu extends Device implements Clockable{
             
             double t3;
             t3 = i/((float)44100/(frequency/2)) + phase;
-            /*if(x >= 277)
+            
+            if(x >= 277)
             vol = 1;
             else
-            vol = 0;*/
+            vol = 0;
             //vol = 2;
-            if(x%2 == 0){
-                if(i > (50*44100/1000)/50){
-                    vol -= 0.001889;
-                    //vol = 1;
-                    //noiseValue = 200;
-                }
-                else
-                {
-                    vol = 5;
-                    //noiseValue = 1;
-                }
-            }
-            else
-            {
-                vol = 0;
-                //noiseValue = 1;
-                /*
-                if(i < (500*44100/1000)/7)
-                    vol = 1;
-                else
-                    vol = 0;
-*/
-            }
+            
             
             double value = 0;
             double value2 = 0;
@@ -142,12 +121,21 @@ public class Apu extends Device implements Clockable{
             double value5 = 0;
             
             //value = Math.sin(2 * Math.PI * t); //Sine
-            //value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
-            //value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
-            //value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
-            if(x%3 ==0){if(i%noiseValue == 0){if(rng.nextBoolean() == true) value5 = (byte) ((byte)1); else value5 = 0;}}else{value5 = 0; }
+            value2 = Math.signum(Math.sin(2 * Math.PI * t2) + pulseWidth); //pulse Square
+            value3 = 1f - 4f * (float)Math.abs( Math.round(t-0.25f) - (t-0.25f) ); //triangle
+            value4 = 2f*(t3-(float)Math.floor(t3+pulseWidth)); //sawtooth
+            //if(x%3 ==0){if(i%noiseValue == 0){if(rng.nextBoolean() == true) value5 = (byte) ((byte)1); else value5 = 0;}}else{value5 = 0; }
             
-            bufsum[ 0 ] = (byte) (value+value2+value3+value4*vol+value5*vol);
+            if(x < 277)
+                value3 = 0;
+            
+            if(x < 360)
+                value4 = 0;
+            
+            
+            
+            
+            bufsum[ 0 ] = (byte) (value+value2+value3+value4+value5*vol);
             
             sdl.write( bufsum, 0, 1 );
         }

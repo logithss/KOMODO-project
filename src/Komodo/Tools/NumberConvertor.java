@@ -35,40 +35,48 @@ public class NumberConvertor {
                     break;
                 default:
                     if(!command.isEmpty())
-                        convertNumber(command);
+                        System.out.println(convertNumber(command));
                     break;
                     
             }
         }
     }
     
-    public static void convertNumber(String number)
+    public static String convertNumber(String number)
     {
+        String output = "";
         try{
             int value;
             switch(number.charAt(0))
             {
                 case 'b':
                     value = Integer.parseInt(number.substring(1), 2);
-                    System.out.println("# "+value);
-                    System.out.println("$ "+Integer.toHexString(value));
+                    output = "# "+value + "\n"+ "$ "+Integer.toHexString(value);
+                    break;
+                case '%':
+                    value = Integer.parseInt(number.substring(1), 2);
+                    output = "# "+value + "\n"+ "$ "+Integer.toHexString(value);
                     break;
                 case 'h':
                     value = Integer.parseInt(number.substring(1), 16);
-                    System.out.println("% "+Integer.toBinaryString(value));
-                    System.out.println("# "+value);
+                    output = "% "+Integer.toBinaryString(value) + "\n" + "# "+value;
+                    break;
+                case '$':
+                    value = Integer.parseInt(number.substring(1), 16);
+                    output = "% "+Integer.toBinaryString(value) + "\n" + "# "+value;
                     break;
                 default:
                     value = Integer.parseInt(number, 10);
-                    System.out.println("% "+Integer.toBinaryString(value));
-                    System.out.println("$ "+Integer.toHexString(value));
+                    output = "% "+Integer.toBinaryString(value) + "\n" + "$ "+Integer.toHexString(value);
                     break;
             }
         }
         catch(NumberFormatException e)
         {
-            System.out.println("number format is wrong");
+            output = "number format is wrong";
         }
+        
+        return output;
     }
     
     public static void help()
