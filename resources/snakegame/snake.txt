@@ -1,0 +1,97 @@
+;VARIABLES
+/snakeSize = $1600
+/snakeDir = $1601
+/newSnakeDir = $1602
+/score = $1603
+/fruitPos = $1604
+/dirIncrementX = $1606
+/dirIncrementY = $160a
+/illegalDir= $160e
+/collisionReg1 = $1612
+/collisionReg2 = $1613
+/collisionResult = $1614
+/snakeArray = $1700 ;the array of snake nodes. the first node is the head. Every node takes up two bytes (1 for x pos and 1 for y pos)
+;only one page of memory is allocated to this array, max snake length is 128 node.
+
+
+:S_start
+
+:S_title
+;1)clear screen
+;2)draw title screen
+;3)move snake to corner of title and set direction
+;4)set size of fake snake
+;5)set body nodes to head body position(reverse body move)
+;6)set fake fruit position using a lookup table(index is snake direction)
+;7)move body
+;)move head
+;)check if collision with fake fruit
+;yes? -> increment direction; new fake fruit position
+;check keyboard input; if enter key, GOTO s_game; if 'M' key, mute volume
+;GOTO 7) (keep loop until player starts game)
+
+
+:S_game
+JSR S_clearScreen
+JSR S_resetSnake
+JSR S_readyRoutine
+
+:S_gameLoop
+JSR S_moveBody
+JSR S_moveHead
+
+;)check head against bounds ? yes: GOTO S_gameOver
+
+
+;)check head against body ? yes: GOTO S_gameOver 
+
+
+;)check head against fruit ? yes: GOTO S_score; GOTO newFruit;
+
+
+JSR S_drawGame
+JSR S_gameDelay
+JMP S_gameLoop
+
+
+:S_gameover
+:S_redSnakeRoutine
+;)set all characters of snake to X
+;)draw snake red
+;)wait 250 ms
+;)draw snake white
+;)wait 250 ms
+;) if counter is done, return; else, jump to S_redSnakeRoutine
+;)wait 1000 ms
+;draw gameOverScreen
+;check keyboard input; if enter key, GOTO s_game
+
+:S_clearScreen
+rsr
+
+:S_resetSnake
+rsr
+
+:S_readyRoutine
+rsr
+
+:S_moveBody
+rsr
+
+:S_moveHead
+rsr
+
+:S_pointVSbound
+rsr
+
+:S_pointVSpoint
+rsr
+
+:S_drawGame
+rsr
+
+:S_gameDelay
+rsr
+
+:S_gameLoop
+rsr
