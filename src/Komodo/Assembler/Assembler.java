@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,7 +110,7 @@ public class Assembler {
         
         for(CommandBlock block : blocks)
         {
-                System.out.println("block start "+block.startingAddress+", size is "+block.byteSize);
+                //System.out.println("block start "+block.startingAddress+", size is "+block.byteSize);
                 //System.out.println("filledPointer: "+filledPointer);
                 //fill array if there are blanks
                 if(block.startingAddress > filledPointer){
@@ -134,9 +135,9 @@ public class Assembler {
     
     public void writeToFile(String stringPath, byte[]code) throws IOException
     {
-        System.out.println("output: ");
-        for(int i : code)
-            System.out.println(Integer.toHexString(i));
+        //System.out.println("output: ");
+        //for(int i : code)
+            //System.out.println(Integer.toHexString(i));
         Path path = Paths.get(stringPath);
         Files.write(path, code);
     }
@@ -156,9 +157,36 @@ public class Assembler {
                 //System.out.println(currentBlock.addressCounter);
                 labels.put(assemblyLine.substring(1), currentBlock.addressCounter);
                 break;
+            case '/':
+                //variable, considered almost like a label
+                try{
+                    String[] split = assemblyLine.split("="); //split the line using the '=' symbol
+                    for(String s: split)
+                        System.out.println(s);
+                    String varname = split[0].trim().substring(1);
+                    System.out.println("varname: "+varname);
+                    int value = NumberUtility.decodeAssemblyNumber(split[1].trim());
+                    labels.put(varname, value);
+                }
+                catch(NumberFormatException e)
+                {
+                    System.out.println("here");
+                    throw new SyntaxErrorException("illegal argument");
+                }
+                catch(NoSuchElementException e)
+                {
+                    throw new SyntaxErrorException("malformed argument");
+                }
+                break;
             case '*':
                 //create a new code block at the starting address specified
-                newBlock(NumberUtility.decodeAssemblyNumber(assemblyLine.substring(1)));
+                try{
+                    newBlock(NumberUtility.decodeAssemblyNumber(assemblyLine.substring(1)));
+                }
+                catch(NumberFormatException e)
+                {
+                    throw new SyntaxErrorException("malformed number for new code insert command");
+                }
                 break;
             default:
             {

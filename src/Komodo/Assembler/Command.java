@@ -66,17 +66,22 @@ public class Command {
     
     
     //new code from logithss
-    public void assignAddress(int address)
+    public void assignAddress(int value)
     {
-        char addressWord = (char)address;
-        byte[] addressBytes = NumberUtility.wordToBytes(addressWord);
-        this.bytecode[1] = addressBytes[0];
-        this.bytecode[2] = addressBytes[1];
+        if(bytecode.length == 2)
+        {
+           this.bytecode[1] = (byte) value; 
+        }
+        else if(bytecode.length == 3)
+        {
+            char addressWord = (char)value;
+            byte[] addressBytes = NumberUtility.wordToBytes(addressWord);
+            this.bytecode[1] = addressBytes[0];
+            this.bytecode[2] = addressBytes[1];
+        }
     }
     
-    public void process() throws IllegalInstructionException, SyntaxErrorException { 
-        
-        System.out.println("line");
+    public void process() throws IllegalInstructionException, SyntaxErrorException {
         
         Scanner parse = new Scanner(assemblyLine);
         boolean isNumeric = true; 
@@ -179,7 +184,7 @@ public class Command {
             /*Must check whether the instructions does in fact exist, and that it will 
             assign the corresponding adressing mode to the right instruction*/
             Instruction newInstruction = null;
-            System.out.println(adressingMode);
+            //System.out.println(adressingMode);
             while (!isMatched) {
                 if (fetchedInstructions.get(counter).addressingMode == adressingMode) {
                     newInstruction = fetchedInstructions.get(counter);
@@ -221,6 +226,7 @@ public class Command {
             try{
                 switch (newInstruction.addressingMode) {
                     case IMMEDIATE:
+                        if(needLabel)break;
                         this.bytecode[1] = (byte) decodeAssemblyNumber(argument);
                         break;
 
@@ -228,12 +234,11 @@ public class Command {
                         break;
 
                     default:
-                        if (!needLabel) {
+                        if(needLabel)break;
                         char number = (char) decodeAssemblyNumber(argument);
                         byte[] bytes = wordToBytes(number);
                         this.bytecode[1] = bytes[0];
                         this.bytecode[2] = bytes[1];
-                        }
                         break;
                 }
             }
