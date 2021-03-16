@@ -138,6 +138,9 @@ public class ControlPanel extends TitlePanel implements UIPanel{
         playButton.setManaged(systembus.on);
         
         cycleCountText.setText("Cycles: "+systembus.accessSystemClock().cycleCount);
+        
+        if(systembus.accessSystemClock().interupt > 0)
+            cycleCountText.setText(cycleCountText.getText()+ " (halted: "+systembus.accessSystemClock().interupt+"ms)");
     }
     
 }

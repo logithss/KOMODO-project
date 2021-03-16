@@ -25,6 +25,9 @@ public class Ppu extends Device implements Clockable{
     private double width;
     private double height;
     
+    int i = 5;
+    int x = 0;
+    
     public Ppu(SystemBus systembus) {
         super(systembus);
     }
@@ -40,7 +43,12 @@ public class Ppu extends Device implements Clockable{
             gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
             gc.setFill(Color.WHITE);
             gc.setFill(decodeColor((byte)0xff));
-            gc.fillText(String.valueOf('A'), 100, 100);        
+            gc.fillText(String.valueOf((char)219), x, 100);
+            
+            x += i;
+            
+            if(x> gc.getCanvas().widthProperty().intValue() | x<0)
+                i *= -1;
     }
     
     private Color decodeColor(byte value)

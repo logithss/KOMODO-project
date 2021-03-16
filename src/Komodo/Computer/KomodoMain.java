@@ -59,6 +59,8 @@ public class KomodoMain extends Application {
     static SystemBus systembus;
     private Stage window;
     
+    private Canvas renderCanvas;
+    
     private AnimationTimer anim;
     @Override
     public void start(Stage primaryStage) {
@@ -90,7 +92,7 @@ public class KomodoMain extends Application {
         VBox rightBox = new VBox();
         rightBox.setPadding(new Insets(20));
         rightBox.setSpacing(10);
-        rightBox.setPrefWidth(550);
+        rightBox.setPrefWidth(570);
         rightBox.getChildren().addAll(upperPanelsScroll, clockPanel);
         
         Menu menu1 = new Menu("Computer");
@@ -103,14 +105,21 @@ public class KomodoMain extends Application {
             openNumberConverterWindow();
         });
         
-        menu1.getItems().addAll(menuItem1, menuItem2);
+        MenuItem menuItem3 = new MenuItem("Fullscreen");
+        menuItem3.setOnAction(e -> {
+            //rightBox
+            rightBox.setVisible(!rightBox.isVisible());
+            rightBox.setManaged(!rightBox.isVisible());
+        });
+        
+        menu1.getItems().addAll(menuItem1, menuItem2, menuItem3);
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().add(menu1);
         
         //render canvas
         float ratio = 1.6f;
         int width = 1280;
-        Canvas renderCanvas = new Canvas(width, width/ratio);
+        renderCanvas = new Canvas(width, width/ratio);
         GraphicsContext gc = renderCanvas.getGraphicsContext2D();
         systembus.accessPpu().setGC(gc);
         
@@ -119,7 +128,13 @@ public class KomodoMain extends Application {
         root.setTop(menuBar);
         root.setLeft(renderCanvas);
         
-        FlowPane f = new FlowPane();
+        //renderCanvas.widthProperty().bind(primaryStage.widthProperty().subtract(rightBox.widthProperty()) );
+        primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
+            renderCanvas.widthProperty().set(primaryStage.widthProperty().subtract(rightBox.widthProperty()).intValue());
+            if(renderCanvas.widthProperty().intValue() <= 200)
+                renderCanvas.widthProperty().set(200);
+        });
+        renderCanvas.heightProperty().bind(renderCanvas.widthProperty().divide(ratio));
 
         
         anim = new AnimationTimer() { //Game main loop

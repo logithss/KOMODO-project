@@ -28,7 +28,7 @@ public class Cpu extends Device implements Clockable {
     byte stackPointer = (byte)0x0;
     byte argumentFetched = 0;
     char newAddress;
-    char newestAddress;
+    boolean lastOPisImplied = false;
     char displayPc=0;
     
     boolean[] flags = new boolean[4];//CNBZ
@@ -46,6 +46,7 @@ public class Cpu extends Device implements Clockable {
         4:run instruction with argument
          */
         byte OPcode = systembus.accessMemory().readByte(pc); //instruction OPcode
+        lastOPisImplied = false;
         //System.out.println((int) pc + " : " + OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
         
@@ -162,7 +163,7 @@ public class Cpu extends Device implements Clockable {
     
     private void implied() {
 
-        argumentFetched = -1;
+        lastOPisImplied = true;
     }
 
     
@@ -540,7 +541,7 @@ public class Cpu extends Device implements Clockable {
     private void jsr() {
 
         
-        char stackAddress = (char) (stackStart + stackPointer);
+        char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
         
         systembus.accessMemory().writeWord(stackAddress, (char)(pc));
 
@@ -559,7 +560,7 @@ public class Cpu extends Device implements Clockable {
          stackPointer--;
          stackPointer--;
          
-         char stackAddress = (char) (stackStart + stackPointer);
+         char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
          
          pc = systembus.accessMemory().readWord(stackAddress);
 
@@ -604,7 +605,7 @@ public class Cpu extends Device implements Clockable {
 
     public void pha() {
 
-        char stackAddress = (char) (stackStart + stackPointer);
+        char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
 
         systembus.accessMemory().writeByte(stackAddress, A);
 
@@ -614,7 +615,7 @@ public class Cpu extends Device implements Clockable {
 
     public void phx() {
 
-        char stackAddress = (char) (stackStart + stackPointer);
+        char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
 
         systembus.accessMemory().writeByte(stackAddress, X);
 
@@ -628,7 +629,7 @@ public class Cpu extends Device implements Clockable {
          stackPointer--;
          stackPointer--;
          
-         char stackAddress = (char) (stackStart + stackPointer);
+         char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
          
         
          
@@ -648,7 +649,7 @@ public class Cpu extends Device implements Clockable {
          stackPointer--;
          stackPointer--;
          
-         char stackAddress = (char) (stackStart + stackPointer);
+         char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
          
          X = systembus.accessMemory().readByte(stackAddress);
          
@@ -710,6 +711,9 @@ public class Cpu extends Device implements Clockable {
     private void tsx() {
 
         X = stackPointer;
+        if(X == 0 ){
+            flags[3] = true;
+        }
     }
 
     private void txs() {
@@ -732,11 +736,11 @@ public class Cpu extends Device implements Clockable {
         int randomInt = randomGenerator.nextInt();
 
         
-        if(argumentFetched == -1){
-             Y = Byte.valueOf(Integer.toString(randomInt));
+        if(lastOPisImplied == true){
+             Y = (byte) randomInt;
         }
         else{
-            systembus.accessMemory().writeByte(newAddress,Byte.valueOf(Integer.toString(randomInt)) );
+            systembus.accessMemory().writeByte(newAddress,(byte) randomInt);
         }   
     }
     
