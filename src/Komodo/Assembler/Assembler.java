@@ -144,7 +144,7 @@ public class Assembler {
     
     public void interpretLine(String assemblyLine, int line) throws SyntaxErrorException, IllegalInstructionException
     {
-        char prefix = assemblyLine.charAt(0);
+        char prefix = assemblyLine.trim().charAt(0);
         
         Command newCommand = null;
         
@@ -155,17 +155,20 @@ public class Assembler {
             case ':':
                 //label, calculate address its pointing to and put in labels map
                 //System.out.println(currentBlock.addressCounter);
-                labels.put(assemblyLine.substring(1), currentBlock.addressCounter);
+                System.out.println("label: "+assemblyLine.substring(1));
+                String correctedLabel = assemblyLine.split(";")[0].substring(1).trim();
+                labels.put(correctedLabel, currentBlock.addressCounter);
                 break;
             case '/':
                 //variable, considered almost like a label
                 try{
                     String[] split = assemblyLine.split("="); //split the line using the '=' symbol
-                    for(String s: split)
-                        System.out.println(s);
+                    //for(String s: split)
+                        //System.out.println(s);
                     String varname = split[0].trim().substring(1);
-                    System.out.println("varname: "+varname);
-                    int value = NumberUtility.decodeAssemblyNumber(split[1].trim());
+                    //System.out.println("varname: "+varname);
+                    String argument = split[1].split(";")[0].trim();
+                    int value = NumberUtility.decodeAssemblyNumber(argument);
                     labels.put(varname, value);
                 }
                 catch(NumberFormatException e)
@@ -191,7 +194,8 @@ public class Assembler {
             default:
             {
                 try {
-                    newCommand = new Command(assemblyLine);
+                    System.out.println(assemblyLine);
+                    newCommand = new Command(assemblyLine.trim());
                     newCommand.lineNumber = line;
                 } catch (IllegalInstructionException ex) {
                     throw ex;
