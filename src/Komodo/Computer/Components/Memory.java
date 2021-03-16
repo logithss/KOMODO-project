@@ -19,13 +19,13 @@ public class Memory extends Device{
         super(systemBus);
         memory = new byte[65536];
         
-        memory[0] = 0x3;
+        /*memory[0] = 0x3;
         memory[1] = 0x6d;
         memory[2] = (byte)0x00;
         memory[3] = (byte)0x36;
         memory[4] = (byte)0x00;
         memory[5] = (byte)0x00;
-        memory[6] = (byte)0x6c;
+        memory[6] = (byte)0x6c;*/
         
     }
     

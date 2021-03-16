@@ -70,8 +70,13 @@ public class Assembler {
         }
         
         //when all files are processed, give labels to commands that need them
+        /*System.out.println("************STORED LABELS**************");
+        for(String i : labels.keySet())
+            System.out.println("'"+i+"'");*/
+        //System.out.println("************REQUESTED LABELS**************");
             for(Command command : incompleteCommands)
             {
+                //System.out.println("searching label '"+command.labelName+"'");
                 Integer address = labels.get(command.labelName);
                 if(address != null)
                     command.assignAddress(address);
@@ -81,7 +86,7 @@ public class Assembler {
             }
         
         //commands are now all ready to be written in byte file
-        
+        System.out.println("how many blocks?: "+blocks.size());
         //sort blocks by starting positions
         Collections.sort(blocks);
         
@@ -89,8 +94,12 @@ public class Assembler {
         ArrayList<CommandBlock> blocksToRemove = new ArrayList<>();
         for(CommandBlock block: blocks)
         {
-            if(block.byteSize==0)
+            System.out.println("BLOCK STARTS AT "+block.startingAddress);
+            System.out.println("this block length is: "+block.byteSize);
+            if(block.byteSize==0){
                 blocksToRemove.add(block);
+                System.out.println("block is removed");
+            }
         }
         blocks.removeAll(blocksToRemove);
         
@@ -102,8 +111,8 @@ public class Assembler {
         byte[] finalByteArray = new byte[byteCount];
         
         //merge all instructions into one byte array
-        int bytePointer = blocks.get(0).startingAddress;
-        int filledPointer = bytePointer;
+        int bytePointer = 0;
+        int filledPointer = blocks.get(0).startingAddress;
         
         //value to use when filling blanks in the file
         byte blankFillValue = 0;
@@ -114,10 +123,11 @@ public class Assembler {
                 //System.out.println("filledPointer: "+filledPointer);
                 //fill array if there are blanks
                 if(block.startingAddress > filledPointer){
+                    System.out.println("FILL");
                     Arrays.fill(finalByteArray, bytePointer, block.startingAddress, blankFillValue);
                     filledPointer = block.startingAddress;
                 }
-                bytePointer = block.startingAddress;
+                //bytePointer = block.startingAddress;
                 //write block instruction into final array
                 byte[] instruction = block.getBytecodeArray();
                 if(instruction.length != 0){
@@ -145,7 +155,7 @@ public class Assembler {
     public void interpretLine(String assemblyLine, int line) throws SyntaxErrorException, IllegalInstructionException
     {
         char prefix = assemblyLine.trim().charAt(0);
-        
+        System.out.println("PREFIX: "+prefix);
         Command newCommand = null;
         
         switch(prefix){
@@ -155,8 +165,8 @@ public class Assembler {
             case ':':
                 //label, calculate address its pointing to and put in labels map
                 //System.out.println(currentBlock.addressCounter);
-                System.out.println("label: "+assemblyLine.substring(1));
-                String correctedLabel = assemblyLine.split(";")[0].substring(1).trim();
+                System.out.println("label:"+assemblyLine.replaceAll("\t", "").substring(1));
+                String correctedLabel = assemblyLine.replaceAll("\t", "").split(";")[0].trim().substring(1).trim();
                 labels.put(correctedLabel, currentBlock.addressCounter);
                 break;
             case '/':

@@ -90,6 +90,7 @@ public class KomodoMain extends Application {
         VBox rightBox = new VBox();
         rightBox.setPadding(new Insets(20));
         rightBox.setSpacing(10);
+        rightBox.setPrefWidth(550);
         rightBox.getChildren().addAll(upperPanelsScroll, clockPanel);
         
         Menu menu1 = new Menu("Computer");
@@ -116,7 +117,9 @@ public class KomodoMain extends Application {
         BorderPane root = new BorderPane();
         root.setRight(rightBox);
         root.setTop(menuBar);
-        root.setCenter(renderCanvas);
+        root.setLeft(renderCanvas);
+        
+        FlowPane f = new FlowPane();
 
         
         anim = new AnimationTimer() { //Game main loop

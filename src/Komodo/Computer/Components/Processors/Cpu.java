@@ -49,6 +49,13 @@ public class Cpu extends Device implements Clockable {
         //System.out.println((int) pc + " : " + OPcode);
         Instruction instruction = Instructions.getInstructionByOpcode(OPcode);
         
+        if(instruction == null)
+        {
+            pc++;
+            displayPc = pc;
+            return;
+        }
+        
         switch (instruction.addressingMode) {
             case IMPLIED:
                 implied();
@@ -446,8 +453,10 @@ public class Cpu extends Device implements Clockable {
         A bigger:B-> TRUE Z-> FALSE
         A smaller:B-> FALSE Z-> FALSE
         */
-        int val = Byte.compare(A, argumentFetched);
+        System.out.println();
+        int val = Integer.compare(Byte.toUnsignedInt(A), Byte.toUnsignedInt(argumentFetched));
 
+        System.out.println("CMP: "+val);
         if (val == 0) {
             flags[3] = true;
             flags[2] = false;
@@ -533,7 +542,7 @@ public class Cpu extends Device implements Clockable {
         
         char stackAddress = (char) (stackStart + stackPointer);
         
-        systembus.accessMemory().writeWord(stackAddress, (char)(pc+1));
+        systembus.accessMemory().writeWord(stackAddress, (char)(pc));
 
         stackPointer++;
         stackPointer++;

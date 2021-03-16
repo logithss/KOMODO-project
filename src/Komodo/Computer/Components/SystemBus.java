@@ -68,7 +68,7 @@ public class SystemBus implements Clockable{
         this.cpu.clock();
         //this.ppu.clock();
         //this.apu.clock();
-        this.keyboardScanner.clock();
+        //this.keyboardScanner.clock();
     }
     
     public Memory accessMemory() {return this.memory;}
