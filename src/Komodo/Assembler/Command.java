@@ -137,30 +137,69 @@ public class Command {
                 parsedOperand = "";
             }
             
-            
+            String[] split = parsedOperand.trim().split(";")[0].trim().split(",");
             
             /*Cases for how the argument is written. Depending on how its written 
             it will create an array with its corresponding byte code and will parse the 
             number part of it*/
-            if (parsedOperand.startsWith("!")) {
+            System.out.println("//////////");
+            System.out.println(parsedOperand.trim().split(";")[0]);
+            System.out.println(assemblyLine+":::"+split[0]);
+            switch(split[0].toLowerCase()){
+                case "!":
+                    adressingMode = Instruction.AddressingMode.INDIRECT;
+                    bytecode = new byte[3]; 
+                    argument = split[1];
+                    break;
+                case "x!":
+                    adressingMode = Instruction.AddressingMode.INDIRECT_X;
+                    bytecode = new byte[3];
+                    argument = split[1];
+                    break;
+                case "#":
+                    adressingMode = Instruction.AddressingMode.IMMEDIATE;
+                    bytecode = new byte[2];
+                    argument = split[1];
+                    break;
+                case "x":
+                    adressingMode = Instruction.AddressingMode.ABSOLUTE_X;
+                    bytecode = new byte[3];
+                    argument = split[1];
+                    break;
+                case "y":
+                    adressingMode = Instruction.AddressingMode.ABSOLUTE_X;
+                    bytecode = new byte[3];
+                    argument = split[1];
+                    break;
+                case "":
+                    adressingMode = Instruction.AddressingMode.IMPLIED;
+                    bytecode = new byte[1];
+                    break;
+                default:
+                    adressingMode = Instruction.AddressingMode.ABSOLUTE;
+                    bytecode = new byte[3];
+                    argument = split[0];
+                    
+            }
+            /*if (parsedOperand.startsWith("!,")) {
                 adressingMode = Instruction.AddressingMode.INDIRECT;
                 bytecode = new byte[3]; 
                 argument = parsedOperand.substring(1, parsedOperand.length());
                         
-            } else if (parsedOperand.startsWith("x!")) { 
+            } else if (parsedOperand.startsWith("x!,")) { 
                 adressingMode = Instruction.AddressingMode.INDIRECT_X;
                 bytecode = new byte[3];
                 argument = parsedOperand.substring(2, parsedOperand.length());
                 
-            } else if (parsedOperand.startsWith("#")) { 
+            } else if (parsedOperand.startsWith("#,")) { 
                 adressingMode = Instruction.AddressingMode.IMMEDIATE;
                 bytecode = new byte[2];
                 argument = parsedOperand.substring(1, parsedOperand.length());
-            } else if (parsedOperand.startsWith("x")) { 
+            } else if (parsedOperand.startsWith("x,")) { 
                 adressingMode = Instruction.AddressingMode.ABSOLUTE_X;
                 bytecode = new byte[3];
                 argument = parsedOperand.substring(1, parsedOperand.length());
-            } else if (parsedOperand.startsWith("y")) { 
+            } else if (parsedOperand.startsWith("y,")) { 
                 adressingMode = Instruction.AddressingMode.ABSOLUTE_Y;
                 bytecode = new byte[3];
                 argument = parsedOperand.substring(1, parsedOperand.length());
@@ -171,7 +210,7 @@ public class Command {
                 adressingMode = Instruction.AddressingMode.ABSOLUTE;
                 bytecode = new byte[3];
                 argument = parsedOperand.substring(0, parsedOperand.length());
-            }
+            }*/
             
             
             
