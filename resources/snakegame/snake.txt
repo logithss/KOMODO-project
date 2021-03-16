@@ -1,3 +1,4 @@
+*$10
 ;VARIABLES
 /snakeSize = $1600
 /snakeDir = $1601
@@ -8,8 +9,8 @@
 /dirIncrementY = $160a
 /illegalDir= $160e
 /collisionReg1 = $1612
-/collisionReg2 = $1613
-/collisionResult = $1614
+/collisionReg2 = $1614
+/collisionResult = $1616
 /snakeArray = $1700 ;the array of snake nodes. the first node is the head. Every node takes up two bytes (1 for x pos and 1 for y pos)
 ;only one page of memory is allocated to this array, max snake length is 128 node.
 
@@ -18,7 +19,20 @@
 /ppuRegister = $9 ;starting address, this is the opcode register, 6 argument registers follow
 
 :S_start
-jsr S_clearScreen
+lda $0
+sta collisionReg1
+
+ldx #,1
+lda $1
+sta x,collisionReg1
+
+lda $2
+sta collisionReg2
+
+lda $3
+sta x,collisionReg2
+
+jsr S_pointVSpoint
 brk
 
 jmp S_game
@@ -73,7 +87,7 @@ JMP S_gameLoop
 	;draw gameOverScreen
 	;check keyboard input; if enter key, GOTO s_game
 
-:S_clearScreen
+:S_clearScreen ;COMPLETED
 	;first clear the char memory
 	ldx #,1
 
@@ -117,23 +131,139 @@ rsr
 
 
 
-:S_resetSnake
+:S_resetSnake ;COMPLETED
+lda #,0
+sta snakeSize
+lda #,1
+sta snakeDir
+lda #,5
+sta snakeArray
+ldx #,1
+sta x,snakeArray
 rsr
 
 :S_readyRoutine
 rsr
 
-:S_moveBody
-rsr
+:S_moveBody ;COMPLETED
+	lda snakeSize
+	inc
+	SHR ;shift right to multiply A by two
+	tax
+	;X is now pointing at the x value of node size+1
+	dex
+	dex
+	:copyCheck
+	jmp copy_node
+	clf
+	cpx #,0
+	bnz newNodeCopy
+	rsr
 
-:S_moveHead
-rsr
+	:newNodeCopy
+	dex
+	dex
 
-:S_pointVSbound
-rsr
+	:copy_node
+	lda x,snakeArray
+	inx
+	ldy x,snakeArray
+	inx
+	stx x,snakeArray
+	inx
+	sty x,snakeArray
+	dex
+	dex
+	dex
+	jmp copyCheck
 
-:S_pointVSpoint
-rsr
+
+:S_moveHead ;COMPLETED
+	lda newSnakeDir
+	sta snakeDir
+	tax ;transfer direction into X
+	lda snakeArray ;we now load the head x and add an offset based on the dirIncrementX lookup table (X being our index for the table)
+	add x,dirIncrementX
+	sta snakeArray
+	ldy #,1
+	lda y,snakeArray ;same thing for the head y (we use Y register as snakeArray index to reach the y value)
+	add x,dirIncrementY
+	sta y,snakeArray
+	rsr
+
+:S_pointVSbound ;COMPLETED, VERIFIED
+	;we assume that the point we want to check against the bounds is already in the collisionReg1 register
+
+	:checkXLow
+	lda collisionReg1
+	clf
+	cmp #,0
+	bbg checkXHigh
+	jmp Fail_x
+
+	:checkXHigh
+	clf
+	cmp #,39
+	bbg Fail_x
+	bzr Fail_x
+	jmp checkYLow
+
+	:checkYLow
+	ldx #,1
+	lda x,collisionReg1
+	clf
+	cmp #,1
+	bbg checkYHigh
+	jmp Fail_y
+
+	:checkYHigh
+	clf
+	cmp #,24
+	bbg Fail_y
+	bzr Fail_y
+	;if the test did not fail until this point, then point is within game bounds
+	lda #,0
+	sta collisionResult ;the result of the check is stored in this register
+	rsr
+
+	:Fail_x
+	lda #,1
+	sta collisionResult
+	rsr
+
+	:Fail_y
+	lda #,2
+	sta collisionResult
+	rsr
+
+:S_pointVSpoint ;COMPLETED, VERIFIED
+	;for this check, we assume the two points we want to check are already stored in collisionReg1 and collisionReg2
+	ldy #,0
+	lda collisionReg1
+	clf
+	cmp collisionReg2
+	bnz pvp_Ytest
+	iny
+	:pvp_Ytest
+	ldx #,1
+	lda x,collisionReg1
+	clf
+	cmp x,collisionReg2
+	bzr pvp_finalCheck
+	jmp pvp_checkSuccess
+
+	:pvp_finalCheck
+	clf
+	cpy #,0
+	bzr pvp_checkSuccess ;if y contains 0, then the x test returned false (x dont match), the points therefore dont collide
+	lda #,1
+	sta collisionResult ;we set the collisionResult to 1 to signify that there was indeed a collision
+	rsr
+
+	:pvp_checkSuccess ;we set the collisionResult to 0 to signify that there was no collision
+	lda #,0
+	sta collisionResult
+	rsr
 
 :S_drawGame
 rsr
