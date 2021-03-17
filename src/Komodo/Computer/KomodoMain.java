@@ -9,6 +9,7 @@ package Komodo.Computer;
 import Komodo.Assembler.Assembler;
 import Komodo.Commun.Instruction;
 import Komodo.Commun.NumberUtility;
+import Komodo.Commun.ResourceLoader;
 import Komodo.Computer.Components.SystemBus;
 import Komodo.Computer.UI.*;
 import java.io.File;
@@ -155,6 +156,11 @@ public class KomodoMain extends Application {
             //e.consume();
             closeApplication();
         });
+        
+        //String styleSheet = ResourceLoader.loadStyleFile("C:\\Users\\child\\Documents\\NetBeansProjects\\JavaFXApplication7\\resources\\stylesheets");
+        //if(styleSheet != null)
+        //    scene.getStylesheets().add("\\resources\\stylesheets");
+        //scene.getStylesheets().add("style.css");
         
         //initiate input manager
         InputManager.init(rightBox); //temp root

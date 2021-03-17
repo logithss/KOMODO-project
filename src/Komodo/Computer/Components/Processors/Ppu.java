@@ -8,7 +8,12 @@ package Komodo.Computer.Components.Processors;
 import Komodo.Computer.Components.Clockable;
 import Komodo.Computer.Components.Device;
 import Komodo.Computer.Components.SystemBus;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -21,6 +26,7 @@ import javafx.scene.text.TextAlignment;
 public class Ppu extends Device implements Clockable{
     
     GraphicsContext gc;
+    FileInputStream fontData;
     
     private double width;
     private double height;
@@ -30,6 +36,13 @@ public class Ppu extends Device implements Clockable{
     
     public Ppu(SystemBus systembus) {
         super(systembus);
+        
+        //load font
+        try {
+            fontData = new FileInputStream("resources/fonts/c64.otf");
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Ppu.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -39,16 +52,17 @@ public class Ppu extends Device implements Clockable{
     
     public synchronized void render()
     {
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
-            gc.setFill(Color.WHITE);
-            gc.setFill(decodeColor((byte)0xff));
-            gc.fillText(String.valueOf((char)219), x, 100);
-            
-            x += i;
-            
-            if(x> gc.getCanvas().widthProperty().intValue() | x<0)
-                i *= -1;
+        reloadFont();
+        gc.setFill(Color.BLACK);
+        gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
+        //gc.setFill(Color.WHITE);
+        gc.setFill(decodeColor((byte)0xff));
+        gc.fillText(String.valueOf((char)Byte.toUnsignedInt((systembus.accessMemory().readByte((char)0))) ), x, 0);
+
+        x += i;
+
+        if(x> gc.getCanvas().widthProperty().intValue() | x<0)
+            i *= -1;
     }
     
     private Color decodeColor(byte value)
@@ -62,12 +76,27 @@ public class Ppu extends Device implements Clockable{
     public void setGC(GraphicsContext gc)
     {
         this.gc = gc;
-        this.width = gc.getCanvas().getWidth();
-        this.height = gc.getCanvas().getHeight();
-        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, width, height);
-        gc.setFont(Font.font(width/40));
+        
+        reloadFont();
+    }
+    
+    private void reloadFont()
+    {
+        if(fontData != null){
+            System.out.println("width: "+gc.getCanvas().getWidth()/40);
+            try {
+                fontData = new FileInputStream("resources/fonts/c64.otf");
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Ppu.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            gc.setFont(Font.loadFont(fontData, gc.getCanvas().getWidth()/40));
+        }
+        else
+            System.out.println("font null");
     }
     
 }
