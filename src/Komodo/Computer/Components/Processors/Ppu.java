@@ -87,7 +87,7 @@ public class Ppu extends Device implements Clockable{
     private void reloadFont()
     {
         if(fontData != null){
-            System.out.println("width: "+gc.getCanvas().getWidth()/40);
+            
             try {
                 fontData = new FileInputStream("resources/fonts/c64.otf");
             } catch (FileNotFoundException ex) {
