@@ -1,7 +1,7 @@
 package Komodo.Computer.Components;
 
 import Komodo.Computer.Components.Processors.KeyScanner;
-import Komodo.Computer.Components.Processors.Apu;
+import Komodo.Computer.Components.Processors.Audio.Apu;
 import Komodo.Computer.Components.Processors.Ppu;
 import Komodo.Computer.Components.Processors.Cpu;
 
@@ -51,6 +51,7 @@ public class SystemBus implements Clockable{
     public void powerOff()
     {
         on = false;
+        apu.sid.close();
         apuClock.stopClock();
         systemClock.stopClock();
         
