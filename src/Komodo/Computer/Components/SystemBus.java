@@ -43,7 +43,7 @@ public class SystemBus implements Clockable{
     {
         on = true;
         reset();
-        //this.apuClock.start();
+        this.apuClock.start();
         this.systemClock.haltClock();
         this.systemClock.start();
     }
@@ -67,7 +67,7 @@ public class SystemBus implements Clockable{
     public void clock() {
         this.cpu.clock();
         //this.ppu.clock();
-        //this.apu.clock();
+        this.apu.clock();
         //this.keyboardScanner.clock();
     }
     
