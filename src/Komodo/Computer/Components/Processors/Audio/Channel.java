@@ -36,15 +36,15 @@ public class Channel {
     }
 
     /*This method creates a math equation to calculate the pitch of any waveform*/
-    public float CalculatePitch(int index) {
+    public static float CalculatePitch(int index) {
         /* https://pages.mtu.edu/~suits/NoteFreqCalcs.html*/
 
         if (index == 0) {
             return 0;
 
         } else {
-            float n = (float) Math.pow(Math.pow(2, 1 / 12), index * 2) * this.pitch;
-
+            float n = (float) Math.pow(1.059463094359, index-1) * 131;
+             
             return n;
         }
     }
@@ -59,7 +59,7 @@ public class Channel {
     by 1/3*/
     public void setVolume(int volume) {
 
-        this.volume = volume * 1 / 3;
+        this.volume = volume * 1/3;
     }
 
     public float getPitch() {
