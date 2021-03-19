@@ -18,12 +18,13 @@ public class Channel {
     private Waveform waveform;
     Random rng = new Random();
     int i = 0;
-    double pulseWidth = 0.1;
 
     public static enum Waveform {
         SAWTOOTH, SQUARE, TRIANGLE, RNG, SINE
     };
 
+    /*This method plays a note of certain frequency, which is given by the math 
+    equation*/
     public void playNote(int index) {
 
         this.pitch = CalculatePitch(index);
@@ -33,14 +34,19 @@ public class Channel {
     public Channel(Waveform waveform) {
         this.waveform = waveform;
     }
-    
-    
 
+    /*This method creates a math equation to calculate the pitch of any waveform*/
     public float CalculatePitch(int index) {
+        /* https://pages.mtu.edu/~suits/NoteFreqCalcs.html*/
 
-        /*Creating an math equation for this: https://pages.mtu.edu/~suits/NoteFreqCalcs.html */
-        
-        return 0;
+        if (index == 0) {
+            return 0;
+
+        } else {
+            float n = (float) Math.pow(Math.pow(2, 1 / 12), index * 2) * this.pitch;
+
+            return n;
+        }
     }
 
     public float getVolume() {
@@ -48,24 +54,21 @@ public class Channel {
         return volume;
     }
 
+    /*The volume varies from 0 to 3 in our program. This means that the volume  
+    of the computer can be either 0, 33, 66 or 100, hence why it is multilplied  
+    by 1/3*/
     public void setVolume(int volume) {
 
-        /*For this method, we will need a number ranging from 0 to 3, and from that 
-        number, we will give a volume to it. So in this case, we will get the number 
-        and multiply it by 0.33*/
-        this.volume = volume * 1/3;
+        this.volume = volume * 1 / 3;
     }
 
-    public double getPitch() {
+    public float getPitch() {
 
         return pitch;
     }
 
     public void setPitch(int pitch) {
 
-        /*For this method, we will need a number ranging from x to y, and from that number, 
-        we will give it a pitch, which ranges from 131 to 2093. In this case, we get the pitch by multiplying 
-        it by some number*/
         this.pitch = pitch;
     }
 
@@ -74,18 +77,18 @@ public class Channel {
         return waveform;
     }
 
+    /*This method sets a channel's waveform at some index of the array of waveforms, 
+    which is an Enum*/
     public void setWaveform(int index) {
 
         this.waveform = Waveform.values()[index];
     }
-    
+
+    /*This method generate sounds depending on the channel's current waveform */
     public double generateSoundOutput() {
 
-        
         float frequency = this.pitch;
         int phase = 0;
-        
-        
 
         double t = i / ((float) 44100 / (frequency)) + phase;
 
@@ -93,15 +96,15 @@ public class Channel {
 
         switch (this.waveform) {
             case SAWTOOTH:
-                value = 2f * (t - (float) Math.floor(t + pulseWidth));
+                value = 2f * (t - (float) Math.floor(t));
                 break;
 
             case SQUARE:
-                value = Math.signum(Math.sin(2 * Math.PI * t) + pulseWidth);
+                value = Math.signum(Math.sin(2 * Math.PI * t));
                 break;
 
             case TRIANGLE:
-                value = 1f - 4f * (float) Math.abs(Math.round(t - 0.25f) - (t - 0.25f)); //triangle
+                value = 1f - 4f * (float) Math.abs(Math.round(t - 0.25f) - (t - 0.25f));
                 break;
 
             case SINE:
@@ -111,13 +114,12 @@ public class Channel {
                 if (rng.nextBoolean() == true) {
                     value = (byte) ((byte) 1);
                 } else {
-                    value =  0;
+                    value = 0;
                 }
-                
-        }    
-        
-        
-        i++; 
+
+        }
+
+        i++;
         return value;
 
     }

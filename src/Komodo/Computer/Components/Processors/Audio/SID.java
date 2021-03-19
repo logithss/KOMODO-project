@@ -18,44 +18,39 @@ import javax.sound.sampled.SourceDataLine;
 public class SID {
     
     private Channel[] channels = {new Channel(Waveform.SAWTOOTH), new Channel(Waveform.SQUARE), new Channel(Waveform.SAWTOOTH)};
-    
+
     SourceDataLine sdl;
 
     public SID() {
-        
+
         AudioFormat af;
-        
-        try{
-        af = new AudioFormat( (float )44100, 8, 1, true, false );
-        sdl = AudioSystem.getSourceDataLine( af );
-        sdl.open();
-        sdl.start();
-        }
-        catch(LineUnavailableException e)
-        {
+
+        try {
+            af = new AudioFormat((float) 44100, 8, 1, true, false);
+            sdl = AudioSystem.getSourceDataLine(af);
+            sdl.open();
+            sdl.start();
+        } catch (LineUnavailableException e) {
             System.out.println(e);
         }
     }
-    
+
     public void generateSound() {
-        
-        
+
         channels[0].setPitch(440);
 
         double output1 = channels[0].generateSoundOutput();
-        
-        
+
         double output2 = channels[1].generateSoundOutput();
         double output3 = channels[2].generateSoundOutput();
 
         byte bufsum[] = new byte[1];
 
-        bufsum[0] = (byte) (output1*2);
+        bufsum[0] = (byte) (output1 * 2);
 
         sdl.write(bufsum, 0, 1);
     }
-    
-    
+
     public void close() {
         sdl.flush();
         sdl.close();
