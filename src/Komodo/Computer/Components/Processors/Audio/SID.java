@@ -17,7 +17,7 @@ import javax.sound.sampled.SourceDataLine;
  */
 public class SID {
     
-    private Channel[] channels = {new Channel(Waveform.SAWTOOTH), new Channel(Waveform.SQUARE), new Channel(Waveform.SAWTOOTH)};
+    public Channel[] channels = {new Channel(Waveform.SAWTOOTH), new Channel(Waveform.SQUARE), new Channel(Waveform.SAWTOOTH)};
 
     SourceDataLine sdl;
 

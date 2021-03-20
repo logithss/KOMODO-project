@@ -51,7 +51,7 @@ public class SystemBus implements Clockable{
     public void powerOff()
     {
         on = false;
-        apu.sid.close();
+        apu.closeApu();
         apuClock.stopClock();
         systemClock.stopClock();
         

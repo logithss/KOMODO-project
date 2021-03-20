@@ -21,11 +21,10 @@ import java.util.logging.Logger;
 public class Test {
     
     public static void main(String[] args){
-        byte a = (byte)0x7;
-        int un = Byte.toUnsignedInt(a);
-        System.out.println("raw: "+un);
-        for(int i =0; i<5; i++)
-            un += 0xff;
-        System.out.println("sub: "+(byte)(un));
+        
+        byte instruction = (byte)0xCA;
+        //int a  = (Byte.toUnsignedInt(instruction) & (byte)(0x7f) );
+        int note = (Byte.toUnsignedInt(instruction) & (byte)(0xc0)) >> 6;
+        System.out.println(Integer.toBinaryString(note));
     }
 }

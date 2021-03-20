@@ -43,7 +43,7 @@ public abstract class Clock extends Thread implements Runnable{
         }
     }
     
-    private static long getTime() //get current time (in milliseconds)
+    public static long getTime() //get current time (in milliseconds)
     {
         return System.currentTimeMillis();
     }
