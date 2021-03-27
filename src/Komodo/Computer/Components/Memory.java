@@ -13,7 +13,7 @@ import Komodo.Commun.NumberUtility;
  */
 public class Memory extends Device{
     
-    private byte[] memory;
+    public byte[] memory;
 
     public Memory(SystemBus systemBus) {
         super(systemBus);
