@@ -16,10 +16,18 @@ import Komodo.Assembler.Exceptions.SyntaxErrorException;
 import static Komodo.Commun.NumberUtility.wordToBytes;
 
 /**
- *
+ * The Command class will more specifically take the task of processing the 
+ * assembly file. 
  * @author lojan
  */
 public class Command {
+    
+    /*Variables 
+    @param mnemonic : corresponds to the three letter instructions
+    @param operand : corresponds to what accompanies the mnemonic, only some 
+                     mnemonic require them
+    @param bytecode: corresponds to the array of machine code that will be put 
+                     into the byte file*/
     
     private String mnemonic; 
     private String operand; 
@@ -33,39 +41,52 @@ public class Command {
     
     
 
+    /*Constructor that creates a command object with both mnemonic and operand,
+    will be useful to get fetch the mnemonic and operand.*/
     public Command(String mnemonic, String operand) {
         this.mnemonic = mnemonic;
         this.operand = operand;
     }
-    
+    /*Constructor that will create an object to process the lines of assembly  
+    given to it*/
     public Command(String assemblyLine) throws IllegalInstructionException, SyntaxErrorException
     {
         this.assemblyLine = assemblyLine;
         this.process();
     }
 
+    /*Method that returns the mnemonic of the command object 
+    @return mnemonic of command*/
     public String getMnemonic() {
         return this.mnemonic;
     }
 
+    /*Method that sets the mnemonic of our choice (not useful, good practice)*/
     public void setMnemonic(String mnemonic) {
         this.mnemonic = mnemonic;
     }
 
+    /*Method that returns the operand of the command object 
+    @return operand of command*/
     public String getOperand() {
         return this.operand;
     }
 
+    /*Method that sets the operand of our choice (not useful, good practice)*/
     public void setOperand(String operand) {
         this.operand = operand;
     }
     
+    /*Method that describes the command object when printing it
+    @return description of command object*/
     public String toString() { 
         return "Mnemonic: " + this.mnemonic + "\nOperand: " + this.operand;
     }
     
     
-    //new code from logithss
+    /*Method that is called when the command that requires a label, it will 
+    be called when everything about that label is calculated, more precisely 
+    its address*/
     public void assignAddress(int value)
     {
         if(bytecode.length == 2)
@@ -81,6 +102,9 @@ public class Command {
         }
     }
     
+    
+    /*Method that processes the assembly code, read the follwoing commented  
+    lines to know what is happening.*/
     public void process() throws IllegalInstructionException, SyntaxErrorException {
         
         Scanner parse = new Scanner(assemblyLine);
@@ -181,41 +205,7 @@ public class Command {
                     argument = split[0];
                     
             }
-            /*if (parsedOperand.startsWith("!,")) {
-                adressingMode = Instruction.AddressingMode.INDIRECT;
-                bytecode = new byte[3]; 
-                argument = parsedOperand.substring(1, parsedOperand.length());
-                        
-            } else if (parsedOperand.startsWith("x!,")) { 
-                adressingMode = Instruction.AddressingMode.INDIRECT_X;
-                bytecode = new byte[3];
-                argument = parsedOperand.substring(2, parsedOperand.length());
-                
-            } else if (parsedOperand.startsWith("#,")) { 
-                adressingMode = Instruction.AddressingMode.IMMEDIATE;
-                bytecode = new byte[2];
-                argument = parsedOperand.substring(1, parsedOperand.length());
-            } else if (parsedOperand.startsWith("x,")) { 
-                adressingMode = Instruction.AddressingMode.ABSOLUTE_X;
-                bytecode = new byte[3];
-                argument = parsedOperand.substring(1, parsedOperand.length());
-            } else if (parsedOperand.startsWith("y,")) { 
-                adressingMode = Instruction.AddressingMode.ABSOLUTE_Y;
-                bytecode = new byte[3];
-                argument = parsedOperand.substring(1, parsedOperand.length());
-            } else if (parsedOperand.isEmpty() || parsedOperand.startsWith(";")) {
-                adressingMode = Instruction.AddressingMode.IMPLIED;
-                bytecode = new byte[1];
-            } else { 
-                adressingMode = Instruction.AddressingMode.ABSOLUTE;
-                bytecode = new byte[3];
-                argument = parsedOperand.substring(0, parsedOperand.length());
-            }*/
-            
-            
-            
-            
-            
+        
             boolean isMatched = false;
             int counter = 0;
  

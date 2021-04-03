@@ -8,36 +8,48 @@ package Komodo.Computer.Components.Processors.Audio;
 import java.util.Random;
 
 /**
- *
+ *The channel
  * @author lojan
  */
 public class Channel {
 
+    
+    /*Variables 
+    @param volume: corresponds to the volume of the channel 
+    @param pitch: corresponds to the frequency of the noth that it will play
+    @param waveform: corresponds to the waveform of the note, which can be 
+                     either sawtooth, square, traingle, RNG, or sine
+    */
     private float volume;
     private float pitch;
     private Waveform waveform;
     Random rng = new Random();
     int i = 0;
 
+    /*Enums of Waveform*/
     public static enum Waveform {
         SAWTOOTH, SQUARE, TRIANGLE, RNG, SINE
     };
 
     /*This method plays a note of certain frequency, which is given by the math 
-    equation*/
+    equation
+    @param index: the number between the desired note and the current note*/
     public void playNote(int index) {
 
         this.pitch = CalculatePitch(index);
 
     }
 
+    /*Constructor that creates a channel */
     public Channel(Waveform waveform) {
         this.waveform = waveform;
     }
 
-    /*This method creates a math equation to calculate the pitch of any waveform*/
+    /*This method creates a math equation to calculate the pitch of any waveform
+    https://pages.mtu.edu/~suits/NoteFreqCalcs.html
+    @param index: the number between the desired note and the current note*/
     public static float CalculatePitch(int index) {
-        /* https://pages.mtu.edu/~suits/NoteFreqCalcs.html*/
+        /* */
 
         if (index == 0) {
             return 0;
@@ -49,6 +61,8 @@ public class Channel {
         }
     }
 
+    /*Method which return the volume of the channel
+    @return volume of channel*/
     public float getVolume() {
 
         return volume;
@@ -62,16 +76,21 @@ public class Channel {
         this.volume = volume * 1/3;
     }
 
+    /*Method which returns the pitch of the channel
+    @return pitch of channel*/
     public float getPitch() {
 
         return pitch;
     }
 
+    
     public void setPitch(int pitch) {
 
         this.pitch = pitch;
     }
 
+    /*Method which returns the current waveform of the channel
+    @return waveform of channel*/
     public Waveform getWaveform() {
 
         return waveform;
@@ -84,7 +103,8 @@ public class Channel {
         this.waveform = Waveform.values()[index];
     }
 
-    /*This method generate sounds depending on the channel's current waveform */
+    /*This method generate sounds depending on the channel's current waveform 
+    @return the pitch at which the channel will play*/
     public double generateSoundOutput() {
 
         float frequency = this.pitch;

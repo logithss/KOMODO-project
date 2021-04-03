@@ -8,7 +8,7 @@ package Komodo.Assembler;
 import java.util.ArrayList;
 
 /**
- *
+ * 
  * @author child
  */
 public class CommandBlock implements Comparable<CommandBlock>{

@@ -24,7 +24,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * The Assembler class will be able to assemble one or more files. To be more 
+ * precise, assembly files, which has many instructions for the computer to do,  
+ * and turn them into machine code, which is a file that the computer will  
+ * understand.
  * @author child
  */
 public class Assembler {
