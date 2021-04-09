@@ -11,10 +11,8 @@ import Komodo.Computer.Components.Device;
 import Komodo.Computer.Components.SystemBus;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Platform;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -40,7 +38,7 @@ public class Ppu extends Device implements Clockable {
     public Ppu(SystemBus systembus) {
         super(systembus);
 
-        //load font
+        //Loading the font for the ppu display
         try {
             fontData = new FileInputStream("resources/fonts/c64.otf");
         } catch (FileNotFoundException ex) {
@@ -48,19 +46,23 @@ public class Ppu extends Device implements Clockable {
         }
     }
 
+    // PPU Clocking function
     @Override
     public void clock() {
         render();
     }
 
+    // Function to render one display at a time 
     public synchronized void render() {
+        
         reloadFont();
-        gc.setFill(Color.BLACK);
+        gc.setFill(Color.BLACK);    //reset to black color
         gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
-        //gc.setFill(Color.WHITE);
+  
         gc.setFill(decodeColor((byte) 0xff));
         gc.fillText(String.valueOf((char) Byte.toUnsignedInt((systembus.accessMemory().readByte((char) 0)))), x, 0);
-        
+
+        // Calling function that executes display functions
         executeFunctions();
 
         x += i;
@@ -70,13 +72,15 @@ public class Ppu extends Device implements Clockable {
         }
     }
 
+    // Function decoding byte into rgb color code values
     private Color decodeColor(byte value) {
-        int red = (((Byte.toUnsignedInt(value) & 0b11100000) >> 5) * 255 / 7);
-        int green = (((Byte.toUnsignedInt(value) & 0b00011100) >> 2) * 255 / 7);
-        int blue = ((Byte.toUnsignedInt(value) & 0b00000011) * 255 / 3);
+        int red = (((Byte.toUnsignedInt(value) & 0b11100000) >> 5) * 255 / 7); //the first three bits 
+        int green = (((Byte.toUnsignedInt(value) & 0b00011100) >> 2) * 255 / 7); // the middle three bits
+        int blue = ((Byte.toUnsignedInt(value) & 0b00000011) * 255 / 3);         // last two bits
         return Color.rgb(red, green, blue);
     }
 
+    // Creates the display for the ppu
     public void setGC(GraphicsContext gc) {
         this.gc = gc;
         gc.setTextAlign(TextAlignment.LEFT);
@@ -87,6 +91,8 @@ public class Ppu extends Device implements Clockable {
         reloadFont();
     }
 
+    
+    // reset font
     private void reloadFont() {
         if (fontData != null) {
 
@@ -101,10 +107,14 @@ public class Ppu extends Device implements Clockable {
         }
     }
 
+    
+    // main function deciding which method ppu will execute depending on 5th memory byte
     private void executeFunctions() {
+        //and operation to retrieve last two bits of 5th byte
+        byte opCode = (byte) (systembus.accessMemory().memory[5] & 00000011); 
 
-        byte opCode = (byte) (systembus.accessMemory().memory[5] & 00000011);
-
+        
+        // execute depending on opCode
         switch (opCode) {
             case 00000000:
                 nop();
@@ -124,42 +134,49 @@ public class Ppu extends Device implements Clockable {
 
     }
 
+    // no operation needed
     private void nop() {
 
     }
 
-
+    // draws characters on the display
     private void drawChar() {
 
-        for (int i = 0; i < systembus.accessMemory().memory.length; i++) {
+        int cycle = 0;
+        // cycle through a 40 x 25 display
+        for (int j = 0; j < 25; j++) {
 
-            for (int j = 0; j < 25; j++) {
-
-                for (int k = 0; k < 40; k++) {
-
-                    gc.fillText(String.valueOf(systembus.accessMemory().memory[i + ppuDrawClock]), k, j);
-
-                }
-
+            for (int k = 0; k < 40; k++) {
+                
+                // fill display with 1000 bytes in memory
+                gc.fillText(String.valueOf(systembus.accessMemory().memory[cycle + ppuDrawClock]), k, j);
+                cycle++;
             }
 
         }
+
     }
 
+    
+    // paints colors on display
     private void drawColor() {
 
-        for (int i = 0; i < systembus.accessMemory().memory.length; i++) {
-            for (int j = 0; j < 25; j++) {
-                for (int k = 0; k < 40; k++) {
+        int cycle = 0;
+        
+        // cycle through a 40 x 25 display
+        for (int j = 0; j < 25; j++) {
+            for (int k = 0; k < 40; k++) {
 
-                    gc.setFill(decodeColor(systembus.accessMemory().memory[i + ppuDrawClock]));
-                }
-
+                 // fill display with 1000 bytes in memory
+                gc.setFill(decodeColor(systembus.accessMemory().memory[cycle + ppuDrawClock]));
+                cycle++;
             }
 
         }
+
     }
 
+    // executes drawChar() and drace Color() for every 2000 bytes
     private void draw() {
 
         for (int i = 0; i < systembus.accessMemory().memory.length / 2000; i++) {
@@ -173,14 +190,18 @@ public class Ppu extends Device implements Clockable {
 
     }
 
+    // copies values from one place to another in memory 
     private void copy() {
-
+        
+        //retrieve type of copy to be executed through third bit
         byte copyOp = (byte) (systembus.accessMemory().memory[5] & 00000100);
-
+        
+        // setting start points, size, and target points through memory slots 6 to 11
         char funcStart = NumberUtility.bytesToWord(systembus.accessMemory().memory[6], systembus.accessMemory().memory[7]);
         char funcSize = NumberUtility.bytesToWord(systembus.accessMemory().memory[8], systembus.accessMemory().memory[9]);
         char funcTarget = NumberUtility.bytesToWord(systembus.accessMemory().memory[10], systembus.accessMemory().memory[11]);
 
+        // if normal copy
         if (copyOp <= 0) {
 
             for (int i = 0; i < funcSize; i++) {
@@ -190,11 +211,12 @@ public class Ppu extends Device implements Clockable {
                 funcTarget++;
 
             }
+            // if reverse copy
         } else if (copyOp > 1) {
 
             for (int i = funcSize; i > 0; i--) {
                 char a = (char) i;
-                byte b = 12;
+                
                 systembus.accessMemory().writeByte((char) (funcTarget + a), systembus.accessMemory().readByte((char) (funcStart + a)));
 
             }
@@ -202,14 +224,16 @@ public class Ppu extends Device implements Clockable {
 
     }
 
+    // filling memory slots with one byte value
     private void fill() {
 
+        // retrieve start points, size and byte to fill through 6th to 10th byte
         char funcStart = NumberUtility.bytesToWord(systembus.accessMemory().memory[6], systembus.accessMemory().memory[7]);
         char funcSize = NumberUtility.bytesToWord(systembus.accessMemory().memory[8], systembus.accessMemory().memory[9]);
         byte funcValue = systembus.accessMemory().memory[10];
 
         for (int i = 0; i < funcSize; i++) {
-
+        // fill memory slots
             systembus.accessMemory().writeByte(funcStart, funcValue);
             funcStart++;
         }
@@ -218,9 +242,3 @@ public class Ppu extends Device implements Clockable {
 
 }
 
-//NOTES
-// takes adress at start and use as memory[startadress]
-//take byte memory[5] use and 00000011 and find op code
-// if copy use 00000100  -> then check >0
-// if 0 -> target + i = start + i; i++
-// if 1 -> target + i = start + i ; i--;
