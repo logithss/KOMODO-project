@@ -1,0 +1,889 @@
+*$8000
+;VARIABLES
+/snakeSize = $1600
+/snakeDir = $1601
+/newSnakeDir = $1602
+/score = $1603
+/fruitPos = $1604
+/dirIncrementLower = $1606
+/dirIncrementHigher = $160a
+/illegalDir= $160e
+/collisionReg1 = $1612
+/collisionReg2 = $1614
+/collisionResult = $1616
+/multiplyReg1 = $1620 ;16-bit
+/multiplyReg2 = $1622 ;8-bit
+/multiplyResult = $1623 ;16-bit
+/overFlag = $1625
+/snakeArray = $1700 ;the array of snake nodes. the first node is the head. Every node takes up two bytes (1 for x pos and 1 for y pos)
+;only one page of memory is allocated to this array, max snake length is 128 node.
+
+/charMem = $600
+/colorMem = $e00
+/ppuRegister = $9 ;starting address, this is the opcode register, 6 argument registers follow
+/keyArray = $0
+
+:S_start ;start of application
+;ldx y,snakeArray
+jsr S_initDirTables
+jmp S_game
+;brk
+
+:S_initDirTables ;0:north, 1:east, 2:down, 3:west
+	;lower table init
+	ldx #,0
+	lda #,$d8
+	sta x,dirIncrementLower
+	inx
+	lda #,$1
+	sta x,dirIncrementLower
+	inx
+	lda #,$28
+	sta x,dirIncrementLower
+	inx
+	lda #,$ff
+	sta x,dirIncrementLower
+
+	;higher table init
+	ldx #,0
+	lda #,$ff
+	sta x,dirIncrementHigher
+	inx
+	lda #,$0
+	sta x,dirIncrementHigher
+	inx
+	lda #,$0
+	sta x,dirIncrementHigher
+	inx
+	lda #,$ff
+	sta x,dirIncrementHigher
+	inc
+
+	;illigal table init ;this table contains the list of illigal direction the snake cannot turn to
+	;current dir should be the index for this table
+	ldx #,0
+	lda #,2
+	sta illegalDir
+	inx
+	lda #,3
+	sta x,illegalDir
+	inx
+	lda #,0
+	sta x,illegalDir
+	inx
+	lda #,1
+	sta x,illegalDir
+	inx
+
+	rsr
+
+:S_title
+	JSR S_clearScreen
+	;2)draw title screen
+	;3)move snake to corner of title and set direction
+	;4)set size of fake snake
+	;5)set body nodes to head body position(reverse body move)
+	;6)set fake fruit position using a lookup table(index is snake direction)
+	;7)move body
+	;)move head
+	;)check if collision with fake fruit
+	;yes? -> increment direction; new fake fruit position
+	;check keyboard input; if enter key, GOTO s_game; if 'M' key, mute volume
+	;GOTO 7) (keep loop until player starts game)
+
+
+:S_game
+	JSR S_clearScreen
+	jsr S_drawGameBoard
+	jsr S_updateScreen
+	JSR S_resetVariables
+	jsr S_newFruit
+	JSR S_readyRoutine
+
+	:S_gameLoop
+	;brk
+	JSR S_moveBody
+
+	JSR S_moveHead
+
+	;check fruit collision
+	jsr S_checkFruit
+	clf 
+	lda collisionResult
+	bzr game_FruitNotObtained ;if A is 0, then collision returned 0, snake did not collide with fruit
+
+	jsr S_fruitObtained ;fruit optained behavior
+
+	:game_FruitNotObtained
+	jsr S_checkBounds
+
+	;check if gameover
+	clf
+	lda overFlag
+	bnz gameoverBehavior
+
+	JSR S_drawGame
+	JSR S_drawFruit
+	jsr S_updateScreen
+	jsr S_gameDelay
+	JMP S_gameLoop
+
+	:gameoverBehavior
+	jsr S_gameover
+	jsr S_updateScreen
+
+	:gameover_loop ;gameover loop, wait for user input
+	clf
+	lda $0
+	bzr gameover_loop
+	lda $1
+	ldx #,0
+	clf
+	cmp #,82 ;cap R
+	bnz gameover_nextKey
+	inx
+	:gameover_nextKey
+	cmp #,114;no cap r
+	bzr S_game ;restart the game if key pressed
+	clf
+	txa 
+	clf
+	cmp #,0
+	bnz S_game ;restart the game if key pressed
+	jmp gameover_loop ;loop back if neither r's are pressed
+
+
+:S_checkFruit ;result of the check will be stored in the collisionResult register. opy head address into collisionReg1 and fruit address into collisionReg2
+	;brk
+	ldx #,1
+	lda #,$17
+	sta collisionReg1
+	lda #,$00
+	sta x,collisionReg1
+
+	lda #,$16
+	sta collisionReg2
+	lda #,$04
+	sta x,collisionReg2
+
+	jsr S_pointVSpoint ;execute the collision check
+	;if the snake optained the fruit, the collisionResult register will contain a 1
+	rsr
+
+:S_fruitObtained ;if the snake got the fruit, increment the score and choose a new fruit position
+	lda score
+	inc
+	sta score
+	sta snakeSize ;assuming that size is equal to the score
+
+	jsr S_printScore
+
+	jsr S_newFruit
+	rsr ;this was the easiest piece of code in my entire life
+
+
+:S_printScore
+	lda score
+	ldx #,0
+	:scoreLoop
+	sta $1630 ;random ram spot
+	clf
+	sub #,10
+	bng scoreLoopEnd
+	inx
+	jmp scoreLoop
+
+	:scoreLoopEnd
+	lda $1630 ;restore the last number
+
+	add #,48
+	sta $0609 ;vram position
+	txa
+	clf
+	add #,48
+	sta $0608 ;vram position
+	rsr
+
+
+
+:S_gameover
+	;1)draw snake red with crosses
+	lda snakeSize
+	shl
+	tax
+	lda #,$58 ;ascii value of 'X' character
+	ldy #,$e0 ;value for red color
+	inx
+	inx
+	sax
+	:gameoverXloop
+	sax
+	dex
+	dex
+	sta x!,snakeArray
+	;store the color red in the node too
+	lda x,snakeArray
+	clf
+	add #,$8
+	sta x,snakeArray
+	sty x!,snakeArray
+	lda #,$58 ;ascii value of 'X' character
+	sax
+	clf
+	cmp #,0
+	bnz gameoverXloop
+
+	;2)clear the tail of the snake
+
+	lda snakeSize
+	inc ;get node after the last
+	shl ;multiplies by two to get address (all nodes take 2 byte to store)
+	sax
+	lda #,0 ;load empty character
+	sta x!,snakeArray ;use the address computed and store the empty character at that address (putting an empty character behind the snake to erase it)
+
+	;3)gameover text
+	ldx #,9 ;number of letters to print
+	ldy #,9
+
+	:printLetterTop
+	dex
+	dey
+	lda y,$9000
+	sta x,$79e
+	inx
+	clf
+	dex
+	bnz printLetterTop
+
+
+
+	ldx #,12
+	ldy #,21
+
+	:printLetterBottom
+	dex
+	dey
+	lda y,$9000
+	sta x,$7c5
+	inx
+	clf
+	dex
+	bnz printLetterBottom
+	rsr
+
+
+:S_clearScreen ;COMPLETED
+	;clears charRam to all empty characters (ascii 0) and colorRam to all white
+	;first clear the char memory
+	ldx #,1
+
+	lda #,06
+	jsr S_writeNextPpuByte ;word for start of fill
+
+	lda #,00
+	jsr S_writeNextPpuByte
+
+	lda #,03
+	jsr S_writeNextPpuByte ;word for size of fill
+
+	lda #,$e8
+	jsr S_writeNextPpuByte
+
+	lda #,0
+	jsr S_writeNextPpuByte ;value to fill with (0 is an empty character)
+
+	lda #,3
+	sta ppuRegister ;opcode for fill
+
+	;now clear the color memory, we only change some of the values inside the registers
+
+	ldx #,1
+	lda #,$e
+	sta x,ppuRegister ;change start register to begin at color memory
+	ldx #,5
+	lda #,$FF ;change value to fill (FF is the color white)
+	sta x,ppuRegister
+
+	lda #,3
+	sta ppuRegister ;opcode for fill
+
+
+	rsr ;END clearScreen
+
+	:S_writeNextPpuByte ;write A into ppuRegister + x index, then increment x 
+	sta x,ppuRegister
+	inx
+	rsr
+
+:S_updateScreen
+	;simply draws vram
+	lda #,1
+	sta ppuRegister
+	rsr
+
+:S_resetVariables ;COMPLETED
+	lda #,0
+	sta score
+	sta snakeSize ;size and score = 0
+	lda #,1
+	sta snakeDir ;dir and new dir = 1
+	sta newSnakeDir
+	lda #,$06
+	sta snakeArray ;head position in at 0600 + 215
+	ldx #,1
+	lda #,215
+	sta x,snakeArray
+
+	lda #,0
+	sta overFlag ;game over flag = 0
+
+	jsr S_newFruit ;new fruit
+	rsr
+
+:S_readyRoutine
+	rsr
+
+:S_moveBody ;COMPLETED
+	lda snakeSize
+	inc
+	SHL ;shift left to multiply A by two
+	tax
+	;X is now pointing at the x value of node size+1
+	dex
+	dex
+	:copyCheck
+	jsr copy_node
+	clf
+	cpx #,0
+	bzr movebody_End
+	dex
+	dex
+	jmp copyCheck
+
+	:copy_node
+	lda x,snakeArray
+	inx
+	ldy x,snakeArray
+	inx
+	sta x,snakeArray
+	inx
+	sty x,snakeArray
+	dex
+	dex
+	dex
+	rsr
+
+	:movebody_End
+	rsr
+
+
+:S_moveHead ;COMPLETED
+	lda newSnakeDir
+	sta snakeDir
+	tax ;transfer direction into X
+	ldy #,1
+	lda y,snakeArray ;we now load the head x and add an offset based on the dirIncrementX lookup table (X being our index for the table)
+	clf
+	add x,dirIncrementLower
+	sta y,snakeArray
+	lda snakeArray ;same thing for the head y (we use Y register as snakeArray index to reach the y value)
+	add x,dirIncrementHigher
+	sta snakeArray
+	rsr
+
+:S_checkBounds
+	;simply check if snake head position in on a '#' character
+	lda !,snakeArray
+	clf
+	cmp #,$23
+	bzr setOverFlag
+	rsr
+	:setOverFlag
+	lda #,1
+	sta overFlag
+	rsr
+
+:S_newFruit
+	;first clear fruit in colorRam
+	lda fruitPos
+	clf
+	add #,8
+	sta fruitPos
+	lda #,$ff
+	sta !,fruitPos
+
+	;calculate new fruit position
+	lda #,06
+	sta fruitPos
+	lda #,50
+	ldx #,1
+	sta x,fruitPos
+
+	;add 3 random bytes to this number (06 50)
+
+	ldy #,4
+	:rngFruitLoop
+	lda x,fruitPos
+	rng $1650 ;random number in a random ram address
+	clf
+	add $1650
+	sta x,fruitPos
+	lda fruitPos
+	add #,0
+	sta fruitPos
+
+	clf
+	dey
+	bnz rngFruitLoop
+
+	;check if new position is on the borders, same as snake
+	lda !,fruitPos
+	clf
+	cmp #,$23
+	bzr S_newFruit
+	;if it didn't branch, then the position is valid
+	rsr
+
+
+:S_pointVSbound ;COMPLETED, VERIFIED
+	;we assume that the point we want to check against the bounds is already in the collisionReg1 register
+
+	:checkXLow
+	lda collisionReg1
+	clf
+	cmp #,0
+	bbg checkXHigh
+	jmp Fail_x
+
+	:checkXHigh
+	clf
+	cmp #,39
+	bbg Fail_x
+	bzr Fail_x
+	jmp checkYLow
+
+	:checkYLow
+	ldx #,1
+	lda x,collisionReg1
+	clf
+	cmp #,1
+	bbg checkYHigh
+	jmp Fail_y
+
+	:checkYHigh
+	clf
+	cmp #,24
+	bbg Fail_y
+	bzr Fail_y
+	;if the test did not fail until this point, then point is within game bounds
+	lda #,0
+	sta collisionResult ;the result of the check is stored in this register
+	rsr
+
+	:Fail_x
+	lda #,1
+	sta collisionResult
+	rsr
+
+	:Fail_y
+	lda #,2
+	sta collisionResult
+	rsr
+
+:S_pointVSpoint ;COMPLETED, VERIFIED
+	;for this check, we assume the two points we want to check are already stored in collisionReg1 and collisionReg2 as indirect addresses
+	ldy #,0
+	lda !,collisionReg1
+	clf
+	cmp !,collisionReg2
+	bnz pvp_Ytest
+	iny
+	:pvp_Ytest
+	ldx #,1
+		;increment address to get the second byte of the points
+		lda x,collisionReg1
+		inc
+		sta x,collisionReg1
+
+		lda x,collisionReg2
+		inc
+		sta x,collisionReg2
+
+	lda !,collisionReg1
+	clf
+	cmp !,collisionReg2
+	bzr pvp_finalCheck
+	jmp pvp_checkSuccess
+
+	:pvp_finalCheck
+	clf
+	cpy #,0
+	bzr pvp_checkSuccess ;if y contains 0, then the x test returned false (x dont match), the points therefore dont collide
+	lda #,1
+	sta collisionResult ;we set the collisionResult to 1 to signify that there was indeed a collision
+	rsr
+
+	:pvp_checkSuccess ;we set the collisionResult to 0 to signify that there was no collision
+	lda #,0
+	sta collisionResult
+	rsr
+
+:S_drawGame
+	;draw the snake for now
+	lda #,219 ;load snake body character
+	sta !,snakeArray ;use the address computed and store the body character at that address
+	ldx snakeSize
+	inx ;get node after the last
+	sax ;to perform arithmatic on number in x
+	shl ;multiplies by two to get address (all nodes take 2 byte to store)
+	sax ;return numbers in respective registers
+	lda #,0 ;load empty character
+	sta x!,snakeArray ;use the address computed and store the empty character at that address (putting an empty character behind the snake to erase it)
+	rsr
+
+:S_drawFruit
+	lda #,$40 ;ascii value of '@' character
+	sta !,fruitPos
+	ldy fruitPos ;store the position
+	tya
+	clf
+	add #,$8
+	sta fruitPos
+	lda #,$e0 ;color red
+	sta !,fruitPos
+	sty fruitPos
+	rsr
+
+
+:S_drawGameBoard
+	;draw score text, all values are ascii
+	ldx #,0
+	lda #,83
+	sta x,$0600
+	inx
+	lda #,67
+	sta x,$0600
+	inx
+	lda #,79
+	sta x,$0600
+	inx
+	lda #,82
+	sta x,$0600
+	inx
+	lda #,69
+	sta x,$0600
+	inx
+	lda #,58
+	sta x,$0600
+	inx
+	lda #,48
+	sta x,$0600
+	inx
+	lda #,48
+	sta x,$0600
+	inx
+	lda #,48
+	sta x,$0600
+	inx
+	lda #,48
+	sta x,$0600
+	;the game board consists of 4 lines of '#' character in all 4 boarders
+	;we use the ppu for the top and bottom borders
+
+	;1) top line
+	ldx #,1
+	lda #,$06
+	jsr S_writeNextPpuByte
+	lda #,$28
+	jsr S_writeNextPpuByte
+	lda #,$00
+	jsr S_writeNextPpuByte
+	lda #,$28
+	jsr S_writeNextPpuByte
+	lda #,$23 ;value for the '#' character
+	jsr S_writeNextPpuByte
+	lda #,$3
+	sta ppuRegister
+
+	;2) bottom line (only changing the starting value)
+
+	ldx #,1
+	lda #,$09
+	sta x,ppuRegister
+	inx
+	lda #,$c0
+	sta x,ppuRegister
+
+	lda #,$3
+	sta ppuRegister
+
+	;3) side borders
+	lda #,$06
+	sta $1650
+	lda #,80
+	ldx #,1
+	sta x,$1650
+
+	;set x as index and then push it into stack
+	ldx #,22
+
+
+	:drawGameBoardLoop
+
+	phx
+	ldx #,1
+	ldy #,$23 ;'#' symbol
+	sty !,$1650
+
+	lda x,$1650 ;add 40
+	clf
+	add #,39
+	sta x,$1650
+	lda $1650
+	add #,0
+	sta $1650
+
+	sty !,$1650
+
+	lda x,$1650 ;add 1
+	inc
+	sta x,$1650
+
+	sty !,$1650
+
+	jsr S_updateScreen ;not supposed to be here
+
+	plx
+	clf 
+	dex
+	bnz drawGameBoardLoop
+
+
+	rsr ;for now
+
+
+
+
+:S_gameDelay ;NOTE: DURING THIS ROUTINE, DO NOT USE OR OVERWRITE THE Y REGISTER. 
+			 ;IF YOU DO, THEN STORE IT BEFORE AND PUT IT BACK WHEN YOU RETURN TO THIS ROUTINE
+	ldy #,5 ;delay value
+
+	:newDelayLoop ;code of loop should be before the increment of y
+	jsr S_handleInput
+	DLY #,1
+
+	clf
+	dey
+	bnz newDelayLoop
+	rsr
+
+:S_handleInput ;the game only handles one key press for now
+	clf
+	lda keyArray ;loading in a the # of key pressed
+	bzr handleInputEnd ;if no keys are pressed, input was handled
+	ldx #,1
+	lda x,keyArray ;load first key ascii
+
+	;check if key is wasd
+
+	;first transform all keys to lower cap
+	;if ascii < 91 (CAP letter), then add 32 to the ascii code
+
+	clf
+	cmp #,91
+	bbg compareAscii
+	;if not smaller, dont skip
+	add #,32
+
+	:compareAscii
+	clf
+	cmp #,119 ;w key
+	bzr wPressed
+	clf
+	cmp #,97 ;a key
+	bzr aPressed
+	clf
+	cmp #,115 ;s key
+	bzr sPressed
+	clf
+	cmp #,100 ;d key
+	bzr dPressed
+
+	;key has not needed, end
+	jmp handleInputEnd
+
+	:wPressed
+	;brk
+	lda #,0
+	sta newSnakeDir
+	jsr S_verifyNewDirection
+	jmp handleInputEnd
+
+	:aPressed
+	;brk
+	lda #,3
+	sta newSnakeDir
+	jsr S_verifyNewDirection
+	jmp handleInputEnd
+
+	:sPressed
+	;brk
+	lda #,2
+	sta newSnakeDir
+	jsr S_verifyNewDirection
+	jmp handleInputEnd
+
+	:dPressed
+	;brk
+	lda #,1
+	sta newSnakeDir
+	jsr S_verifyNewDirection
+	jmp handleInputEnd
+
+	:handleInputEnd
+	rsr
+
+:S_verifyNewDirection
+	;insert dir as index in illigal direction table, then check if newDirection is illigal
+	;if its illigal, newDir is set equal to dir, else keep the new direction
+
+	;brk
+	ldx snakeDir
+	lda x,illegalDir ;load illigal dir in a
+	clf
+	cmp newSnakeDir ;if newDir is illigal
+	bzr dirIsIlligal ;dir is illigal
+	rsr ;else, keep newSnakeDir as is
+
+
+	:dirIsIlligal ;newDir is set to old direction
+	lda snakeDir
+	sta newSnakeDir
+	rsr
+
+
+:S_findScreenAddress ;COMPLETED, OLD
+	;return the address where the screen pos(x, y) is in memory
+	;we asume that position is provided by user in the collisionRegister1 and result is returned in collisionResult
+	;multiply 40 by y value of the point
+	;add $0600 to the result
+	;add the x value to the result
+	;the two bytes you get is the address of the point
+	;put result into collisionResult
+
+	;we put $0040 in multiplyReg1
+	ldx #,1 ;first byte is 0
+	lda #,0
+	sta multiplyReg1
+	lda #,40 ;second byte is 40 (big-indian)
+	sta x,multiplyReg1 ;$0028 is now in multiplyReg1
+
+	;put the y value in multiplyReg2
+	lda x,collisionReg1
+	sta multiplyReg2
+
+	;perform multiplication
+	jsr S_multiply
+
+	;add $0600 to the offset y
+	ldx #,1
+	lda multiplyResult
+	clf
+	add #,$06
+	sta multiplyResult
+
+	;add x value to number
+	lda x,multiplyResult ;first digit (lowest)
+	clf
+	add collisionReg1
+	sta x,multiplyResult
+	lda multiplyResult ;second digit (highest)
+	add #,0
+	sta multiplyResult
+
+	;copy result from multiplyReg to collisionResult
+
+	lda multiplyResult
+	sta collisionResult
+	ldx #,1
+	lda x,multiplyResult
+	sta x,collisionResult
+
+	rsr ;address is now at collisionResult
+
+
+
+
+
+
+
+
+
+:S_multiply ;COMPLETED
+	;multiplies 16-bit number at multiplyReg1 with 8-bit number at multiplyReg2, stores result at multiplyResult
+	lda #,0 ;storing default value in case multiplyReg2 is equal to 0
+	sta multiplyResult
+	ldx #,1
+	lda #,0
+	sta x,multiplyResult
+	clf
+	ldy multiplyReg2 ;load multplier number into y?
+	bzr multiply_end ;end if we multiply by zero
+
+	lda multiplyReg1 ;copy multiplyReg1 into multiplyResult
+	sta multiplyResult
+	ldx #,1
+	lda x,multiplyReg1
+	sta x,multiplyResult
+
+	:multiply_ycheck
+	clf
+	dey
+	;check if y is zero
+	bzr multiply_end
+
+	:multiply_loop ;loop until we multiplied enough
+	clf
+	lda x,multiplyResult ;first byte
+	add x,multiplyReg1
+	sta x,multiplyResult
+	lda multiplyResult ;second byte (assuming x is still = 1)
+	add multiplyReg1
+	sta multiplyResult
+
+	jmp multiply_ycheck ;check if were done multiplying
+
+	:multiply_end
+	rsr
+
+
+
+;DATA HERE
+
+*$9000
+;gameover text data
+;"GAME OVER"
+71
+65
+77
+69
+0
+79
+86
+69
+82
+;"R to restart"
+82
+0
+116
+111
+0
+114
+101
+115
+116
+97
+114
+116
+
