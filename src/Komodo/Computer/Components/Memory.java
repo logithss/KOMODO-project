@@ -6,6 +6,7 @@
 package Komodo.Computer.Components;
 
 import Komodo.Commun.NumberUtility;
+import Komodo.Computer.Exceptions.MemoryOutOfBoundException;
 
 /**
  *
@@ -18,7 +19,6 @@ public class Memory extends Device{
     public Memory(SystemBus systemBus) {
         super(systemBus);
         memory = new byte[65536];
-        memory[0] = 96;
         /*memory[0] = 0x3;
         memory[1] = 0x6d;
         memory[2] = (byte)0x00;
@@ -108,9 +108,13 @@ public class Memory extends Device{
         }
     }
     
-    public void flashMemory(byte[] data, int position)
+    public void flashMemory(byte[] data, int position) throws MemoryOutOfBoundException
     {
-        if(position < 0xffff && position + data.length <= 0xffff)
+        if(position < 0xffff && (position + data.length) <= 0xffff){
             System.arraycopy(data, 0, this.memory, position, data.length);
+        }
+        else{
+            throw new MemoryOutOfBoundException("Trying to flash memoy out of the defined bounds");
+        }
     }
 }

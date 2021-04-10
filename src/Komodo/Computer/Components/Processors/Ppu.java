@@ -11,8 +11,14 @@ import Komodo.Computer.Components.Device;
 import Komodo.Computer.Components.SystemBus;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -30,15 +36,23 @@ public class Ppu extends Device implements Clockable {
 
     private double width;
     private double height;
-
-    int i = 5;
-    int x = 0;
-    int ppuDrawClock = 0;
+    private double fontSize = 10; //size of one font character
+    
+    private boolean shouldRender = false;
+    private int count = 5;
+    
+    //constant addresses
+    final char ppuRegister = 0x0009;
+    final char ppuBackgroudRegister = 0x0010;
+    final char charMemoryStart = 0x0600;
+    final char colorMemoryStart = 0x0E00;
+    
+    public volatile List requests = new ArrayList<Byte>();
 
     public Ppu(SystemBus systembus) {
         super(systembus);
 
-        //Loading the font for the ppu display
+        //load font
         try {
             fontData = new FileInputStream("resources/fonts/c64.otf");
         } catch (FileNotFoundException ex) {
@@ -46,42 +60,21 @@ public class Ppu extends Device implements Clockable {
         }
     }
 
-    // PPU Clocking function
     @Override
-    public void clock() {
-        render();
+    public void clock() { //COMPLETED
+        //this.read();
+        executeFunctions((byte)1);
     }
 
-    // Function to render one display at a time 
-    public synchronized void render() {
-        
-        reloadFont();
-        gc.setFill(Color.BLACK);    //reset to black color
-        gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
-  
-        gc.setFill(decodeColor((byte) 0xff));
-        gc.fillText(String.valueOf((char) Byte.toUnsignedInt((systembus.accessMemory().readByte((char) 0)))), x, 0);
-
-        // Calling function that executes display functions
-        executeFunctions();
-
-        x += i;
-
-        if (x > gc.getCanvas().widthProperty().intValue() | x < 0) {
-            i *= -1;
-        }
-    }
-
-    // Function decoding byte into rgb color code values
-    private Color decodeColor(byte value) {
-        int red = (((Byte.toUnsignedInt(value) & 0b11100000) >> 5) * 255 / 7); //the first three bits 
-        int green = (((Byte.toUnsignedInt(value) & 0b00011100) >> 2) * 255 / 7); // the middle three bits
-        int blue = ((Byte.toUnsignedInt(value) & 0b00000011) * 255 / 3);         // last two bits
+    private Color decodeColor(byte value) { //COMPLETED
+        //byte to color -> RRRGGGBB (8 bits, 3 for red data, 3 for green data, 2 for blue)
+        int red = (((Byte.toUnsignedInt(value) & 0b11100000) >> 5) * 255 / 7);
+        int green = (((Byte.toUnsignedInt(value) & 0b00011100) >> 2) * 255 / 7);
+        int blue = ((Byte.toUnsignedInt(value) & 0b00000011) * 255 / 3);
         return Color.rgb(red, green, blue);
     }
 
-    // Creates the display for the ppu
-    public void setGC(GraphicsContext gc) {
+    public void setGC(GraphicsContext gc) { //COMPLETED
         this.gc = gc;
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);
@@ -91,154 +84,168 @@ public class Ppu extends Device implements Clockable {
         reloadFont();
     }
 
-    
-    // reset font
-    private void reloadFont() {
+    private void reloadFont() { //COMPLETED
         if (fontData != null) {
-
             try {
                 fontData = new FileInputStream("resources/fonts/c64.otf");
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(Ppu.class.getName()).log(Level.SEVERE, null, ex);
             }
-            gc.setFont(Font.loadFont(fontData, gc.getCanvas().getWidth() / 40));
+            fontSize = gc.getCanvas().getWidth() / 40; //calculate sizeFont (one line of the screen has 40 characters, no spaces between them)
+            gc.setFont(Font.loadFont(fontData, fontSize));
         } else {
-            System.out.println("font null");
+            System.out.println("null font");
         }
     }
 
-    
-    // main function deciding which method ppu will execute depending on 5th memory byte
-    private void executeFunctions() {
-        //and operation to retrieve last two bits of 5th byte
-        byte opCode = (byte) (systembus.accessMemory().memory[5] & 00000011); 
+    private void executeFunctions(byte b) { //COMPLETED
 
-        
-        // execute depending on opCode
-        switch (opCode) {
-            case 00000000:
+        byte fetchedByte = (byte) (systembus.accessMemory().readByte(ppuRegister));
+        b = fetchedByte;
+        byte opcode = (byte) (b & 0b00000011);
+        switch (opcode) {
+            case 0:
                 nop();
                 break;
-            case 00000001:
-                draw();
+            case 1:
+                //System.out.println("render");
+                //render();
+                shouldRender = true;
+                clearOP();
                 break;
-            case 00000010:
-                copy();
+            case 2:
+                //System.out.println("copy");
+                //get direction of the copy using the 3rd bit pf the fetched byte
+                boolean dir = ((b & 0b00000100)) > 0;
+                copy(dir);
+                clearOP();
                 break;
-            case 00000011:
+            case 3:
+                //System.out.println("fill");
                 fill();
+                clearOP();
                 break;
             default:
 
         }
-
+        /*byte fetchedByte2 = (byte) (systembus.accessMemory().readByte(ppuRegister));
+        
+        if(fetchedByte == fetchedByte2)
+            clearOP();*/
     }
-
-    // no operation needed
-    private void nop() {
-
-    }
-
-    // draws characters on the display
-    private void drawChar() {
-
-        int cycle = 0;
-        // cycle through a 40 x 25 display
-        for (int j = 0; j < 25; j++) {
-
-            for (int k = 0; k < 40; k++) {
-                
-                // fill display with 1000 bytes in memory
-                gc.fillText(String.valueOf(systembus.accessMemory().memory[cycle + ppuDrawClock]), k, j);
-                cycle++;
-            }
-
-        }
-
-    }
-
     
-    // paints colors on display
-    private void drawColor() {
-
-        int cycle = 0;
-        
-        // cycle through a 40 x 25 display
-        for (int j = 0; j < 25; j++) {
-            for (int k = 0; k < 40; k++) {
-
-                 // fill display with 1000 bytes in memory
-                gc.setFill(decodeColor(systembus.accessMemory().memory[cycle + ppuDrawClock]));
-                cycle++;
+    private void read()
+    {
+        List<Byte> l = getRequests();
+        synchronized(l){
+            byte fetchedByte = (byte) (systembus.accessMemory().readByte(ppuRegister));
+            if(fetchedByte == 0)
+                return;
+            else{
+                l.add(fetchedByte);
+                clearOP();
             }
-
         }
-
+    }
+    
+    
+    
+    public void processRequests()
+    {
+        if(shouldRender){
+            render();
+            shouldRender = false;
+        }
+        
+    }
+    
+    public void clearOP()
+    {
+        //reset the ppu register to 0
+        systembus.accessMemory().writeByte(ppuRegister, (byte) 0);
     }
 
-    // executes drawChar() and drace Color() for every 2000 bytes
-    private void draw() {
-
-        for (int i = 0; i < systembus.accessMemory().memory.length / 2000; i++) {
-
-            drawChar();
-            ppuDrawClock += 1000;
-            drawColor();
-            ppuDrawClock += 1000;
-
-        }
-
+    private void nop() {
+        //no operations are performed
     }
-
-    // copies values from one place to another in memory 
-    private void copy() {
+    
+    public synchronized void render() {
+        //read background register and clear background
+        byte backgroundByte = systembus.accessMemory().readByte(ppuBackgroudRegister);
+        gc.setFill(decodeColor(backgroundByte));
+        gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
         
-        //retrieve type of copy to be executed through third bit
-        byte copyOp = (byte) (systembus.accessMemory().memory[5] & 00000100);
-        
-        // setting start points, size, and target points through memory slots 6 to 11
-        char funcStart = NumberUtility.bytesToWord(systembus.accessMemory().memory[6], systembus.accessMemory().memory[7]);
-        char funcSize = NumberUtility.bytesToWord(systembus.accessMemory().memory[8], systembus.accessMemory().memory[9]);
-        char funcTarget = NumberUtility.bytesToWord(systembus.accessMemory().memory[10], systembus.accessMemory().memory[11]);
+        //draw screen
+        char charIndex = 0; //number of characters already drawn
+        for (int y = 0; y < 25; y++) {
 
-        // if normal copy
-        if (copyOp <= 0) {
-
-            for (int i = 0; i < funcSize; i++) {
-
-                systembus.accessMemory().writeByte(funcTarget, systembus.accessMemory().readByte(funcStart));
-                funcStart++;
-                funcTarget++;
-
-            }
-            // if reverse copy
-        } else if (copyOp > 1) {
-
-            for (int i = funcSize; i > 0; i--) {
-                char a = (char) i;
+            for (int x = 0; x < 40; x++) {
+                //reading the color of the character from memory
+                gc.setFill(decodeColor(systembus.accessMemory().readByte( (char)(colorMemoryStart + charIndex) )));
+                //reading the character from memory and drawing
+                char c = (char)Byte.toUnsignedInt(systembus.accessMemory().readByte( (char)(charMemoryStart + charIndex)) );
+                /*if(c == 0)
+                    break;*/
                 
-                systembus.accessMemory().writeByte((char) (funcTarget + a), systembus.accessMemory().readByte((char) (funcStart + a)));
-
+                gc.fillText(String.valueOf(c), x * fontSize, y * fontSize); //fontSize used as an offset
+                charIndex++;
             }
-        }
 
+        }
+    }
+    
+    public void forceRender() //re-render canvas when it has been resized
+    {
+        reloadFont();
+        render();
     }
 
-    // filling memory slots with one byte value
+    private void copy(boolean dir) {
+        //this instruction copies a block of memory from one place to the other (overlap is supported)
+        //this is done by specifying a starting position, a target position and the number of bytes to copy over
+        //start address of the copy is stored at address $ppuRegister + 1
+        //target address of the copy is stored at address $ppuRegister + 3
+        //size value of the copy is stored at address $ppuRegister + 5
+        
+        char funcStart = systembus.accessMemory().readWord( (char)(ppuRegister+1) );
+        char funcTarget = systembus.accessMemory().readWord( (char)(ppuRegister+3) );
+        char funcSize = systembus.accessMemory().readWord( (char)(ppuRegister+5) );
+        
+        if (dir == true) { //direction from end to beginning
+            for (int i = funcSize; i > 0; i--) {
+                systembus.accessMemory().writeByte((char)(funcTarget+i), systembus.accessMemory().readByte((char)(funcStart+i)));
+            }
+        } 
+        else{ //direction from beginning to end
+            for (int i = 0; i < funcSize; i++) {
+                systembus.accessMemory().writeByte((char)(funcTarget+i), systembus.accessMemory().readByte((char)(funcStart+i)));
+            }
+        }
+    }
+
     private void fill() {
 
-        // retrieve start points, size and byte to fill through 6th to 10th byte
-        char funcStart = NumberUtility.bytesToWord(systembus.accessMemory().memory[6], systembus.accessMemory().memory[7]);
-        char funcSize = NumberUtility.bytesToWord(systembus.accessMemory().memory[8], systembus.accessMemory().memory[9]);
-        byte funcValue = systembus.accessMemory().memory[10];
+        char funcStart = systembus.accessMemory().readWord( (char)(ppuRegister+1) );
+        char funcSize = systembus.accessMemory().readWord( (char)(ppuRegister+3) );
+        byte funcValue = systembus.accessMemory().readByte( (char)(ppuRegister+5) );
 
         for (int i = 0; i < funcSize; i++) {
-        // fill memory slots
-            systembus.accessMemory().writeByte(funcStart, funcValue);
-            funcStart++;
+            systembus.accessMemory().writeByte((char)(funcStart+i), funcValue);
         }
-
+    }
+    
+    public synchronized List<Byte> getRequests()
+    {
+        synchronized(requests) {
+            return Collections.synchronizedList(requests);
+        }
     }
 
 }
 
+//NOTES
+// takes adress at start and use as memory[startadress]
+//take byte memory[5] use and 00000011 and find op code
+// if copy use 00000100  -> then check >0
+// if 0 -> target + i = start + i; i++
+// if 1 -> target + i = start + i ; i--;

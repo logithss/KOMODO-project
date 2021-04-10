@@ -75,9 +75,12 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         memStart.setEditable(true);
         memStart.setPrefSize(125, 25);
         
+        HexIntegerStringConverter.createFor(memStart);
+        
         memStart.valueProperty().addListener((obs, oldValue, newValue) ->{
             //to remove focus from address spinner
             grid.requestFocus();
+            //System.out.println("value");
             //System.out.println(newValue);
             if(newValue != null){
                 int value = (int)newValue;
@@ -181,12 +184,19 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
     {
         int index =0;
         //memory view
-        for(int y = 0; y <lineCount; y++)
+        //adding the top line for labels
+        for(int x = 2; x <byteCount+2; x++)
+        {
+            Label l = new Label("$"+Integer.toHexString(x-2));
+            grid.add(l, x, 0);
+        }
+        //adding the rest
+        for(int y = 1; y <lineCount+1; y++)
         {
             Label lineAddress = new AddressLabel("$"+Integer.toHexString(0));
             //address.setStyle("-fx-background-color:gray;");
             grid.add(lineAddress, 0, y);
-            addressArray[y] = lineAddress;
+            addressArray[y-1] = lineAddress;
             Label separator = new Label("   ");
             grid.add(separator, 1, y);
             for(int x = 2; x <byteCount+2; x++)
@@ -194,12 +204,12 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
                 AddressLabel l = new AddressLabel("00 ");
                 l.index = index;
                 l.x = x-2; 
-                l.y = y;
+                l.y = y-1;
                 l.setOnMouseClicked((mouseEvent) -> {
                     selectCell(l.x, l.y);
                 });
                 grid.add(l, x, y);
-                labelArray[x-2][y] = l;
+                labelArray[x-2][y-1] = l;
                 index++;
             }
         }

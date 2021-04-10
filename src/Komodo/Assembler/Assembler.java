@@ -39,7 +39,7 @@ public class Assembler {
     private HashMap<String, Integer> labels;
     
     
-    public void assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException, SyntaxErrorException, IllegalInstructionException, Exception
+    public int assembleFiles(ArrayList<File> assemblyFiles, String exportPath) throws FileNotFoundException, IOException, SyntaxErrorException, IllegalInstructionException, Exception
     {
         //init
         blocks = new ArrayList<>();
@@ -65,6 +65,10 @@ public class Assembler {
                     } catch (SyntaxErrorException ex) {
                         throw new SyntaxErrorException(currentFile.getName()+": "+ex.getMessage() + " at line " + lineCount);
                     } catch (IllegalInstructionException ex) {
+                        throw new IllegalInstructionException(currentFile.getName()+": "+ex.getMessage() + " at line " + lineCount);
+                    }
+                    catch(Exception ex)
+                    {
                         throw new IllegalInstructionException(currentFile.getName()+": "+ex.getMessage() + " at line " + lineCount);
                     }
                 }
@@ -110,8 +114,15 @@ public class Assembler {
             throw new Exception("Files empty or incorrect format, no output was generated");
         
         //calculate size of final array
-        int byteCount = blocks.get(blocks.size()-1).startingAddress+blocks.get(blocks.size()-1).byteSize;
+        int byteCount;
+        if(blocks.size() > 1) //we have multiple blocks, the number of bytes in the final file is equal to the starting address of the last 
+                              //code block (already ordered before) plus its size
+            byteCount = (blocks.get(blocks.size()-1).startingAddress+blocks.get(blocks.size()-1).byteSize) - blocks.get(0).startingAddress;
+        else //if we only have one block, the final size is the size of the block
+            byteCount = blocks.get(0).byteSize;
+        
         byte[] finalByteArray = new byte[byteCount];
+        System.out.println("final size: "+finalByteArray.length);
         
         //merge all instructions into one byte array
         int bytePointer = 0;
@@ -126,24 +137,27 @@ public class Assembler {
                 //System.out.println("filledPointer: "+filledPointer);
                 //fill array if there are blanks
                 if(block.startingAddress > filledPointer){
-                    System.out.println("FILL");
-                    Arrays.fill(finalByteArray, bytePointer, block.startingAddress, blankFillValue);
+                    System.out.println("FILL: " + bytePointer + " -> "+ (block.startingAddress - blocks.get(0).startingAddress));
+                    Arrays.fill(finalByteArray, bytePointer, (block.startingAddress - filledPointer) + bytePointer, blankFillValue);
+                    bytePointer += block.startingAddress - filledPointer;
                     filledPointer = block.startingAddress;
                 }
                 //bytePointer = block.startingAddress;
                 //write block instruction into final array
                 byte[] instruction = block.getBytecodeArray();
                 if(instruction.length != 0){
+                    System.out.println("COPY: "+ bytePointer +" SIZE: "+ block.byteSize);
                     System.arraycopy(instruction, 0, finalByteArray, bytePointer, block.byteSize);
                     bytePointer += block.byteSize;
 
-                    if(bytePointer > filledPointer) filledPointer = bytePointer;
+                    filledPointer += block.byteSize;
                 }
         }
         
         
         //write final byte array into file uing given path
         writeToFile(exportPath, finalByteArray);
+        return finalByteArray.length;
     }
     
     public void writeToFile(String stringPath, byte[]code) throws IOException
@@ -201,7 +215,7 @@ public class Assembler {
                 }
                 catch(NumberFormatException e)
                 {
-                    throw new SyntaxErrorException("malformed number for new code insert command");
+                    throw new SyntaxErrorException("illegal argument for code block insert");
                 }
                 break;
             default:

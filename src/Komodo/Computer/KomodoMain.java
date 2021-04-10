@@ -110,7 +110,7 @@ public class KomodoMain extends Application {
         menuItem3.setOnAction(e -> {
             //rightBox
             rightBox.setVisible(!rightBox.isVisible());
-            rightBox.setManaged(!rightBox.isVisible());
+            rightBox.setManaged(!rightBox.isManaged());
         });
         
         menu1.getItems().addAll(menuItem1, menuItem2, menuItem3);
@@ -134,6 +134,7 @@ public class KomodoMain extends Application {
             renderCanvas.widthProperty().set(primaryStage.widthProperty().subtract(rightBox.widthProperty()).intValue());
             if(renderCanvas.widthProperty().intValue() <= 200)
                 renderCanvas.widthProperty().set(200);
+            systembus.accessPpu().forceRender(); //render when canvas has been resized
         });
         renderCanvas.heightProperty().bind(renderCanvas.widthProperty().divide(ratio));
 
@@ -142,7 +143,7 @@ public class KomodoMain extends Application {
 
             @Override
             public void handle(long l) {
-                systembus.accessPpu().clock();
+                systembus.accessPpu().processRequests();
                 registerPanel.update();
                 memoryPanel.update();
                 dissassemblerPanel.update();
@@ -163,7 +164,11 @@ public class KomodoMain extends Application {
         //scene.getStylesheets().add("style.css");
         
         //initiate input manager
-        InputManager.init(rightBox); //temp root
+        InputManager.init(renderCanvas); //input is only reported if the canvas is focused
+        renderCanvas.requestFocus();
+        renderCanvas.setOnMouseClicked(e -> { //request focus if canvas clicked
+            renderCanvas.requestFocus();
+        });
         primaryStage.setTitle("Komodo emulator v1.0");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -200,11 +205,11 @@ public class KomodoMain extends Application {
     public void closeApplication() {
         //System.exit(0);
         //systembus.powerOff();
+        anim.stop();
         systembus.powerOff();
         System.out.println("******* alive?: "+systembus.accessSystemClock().isAlive());
-        anim.stop();
         window.close();
-        //System.gc();
+        System.gc();
         Platform.exit();
     }
 

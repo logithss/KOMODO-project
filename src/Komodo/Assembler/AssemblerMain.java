@@ -262,8 +262,8 @@ public class AssemblerMain extends Application {
                 try {
                     console.setText(""); //clear console
                     printLine("---START---");
-                    assembler.assembleFiles(files, outputPath);
-                    printLine(">Files succesfully assembled");
+                    int size = assembler.assembleFiles(files, outputPath);
+                    printLine(">Files succesfully assembled ("+size+" bytes)");
                 } catch (Exception ex) {
                     printLine(ex.getMessage());
                     printLine(">Assembling failed");

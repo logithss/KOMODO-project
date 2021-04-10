@@ -24,14 +24,16 @@ public class Cpu extends Device implements Clockable {
     byte X = 0;
     byte Y = 0;
     char pc = 0;
+    final char resertPC = 0x8000;
     char stackStart = 0x100;
     byte stackPointer = (byte) 0x0;
     byte argumentFetched = 0;
     char newAddress;
     boolean lastOPisImplied = false;
-    char displayPc = 0;
-
-    boolean[] flags = new boolean[4]; //flag array
+    char displayPc=0;
+    
+    
+    boolean[] flags = new boolean[4];//CNBZ
 
     public Cpu(SystemBus systembus) {
         super(systembus);
@@ -245,13 +247,14 @@ public class Cpu extends Device implements Clockable {
         lastOPisImplied = true;
     }
 
-    // retrieve instruction at next address
+    // retrieve argument after the opcode
     private void immediate() {
         pc++;
         argumentFetched = systembus.accessMemory().readByte(pc);
     }
 
     // retieve two following bytes and consider that as new Address
+    // read the argument from that address in memory
     private void absolute() {
 
         pc++;
@@ -260,52 +263,45 @@ public class Cpu extends Device implements Clockable {
 
         pc++;
     }
-
+    
+    //same as absolute, but the value of the X register is added to the address 
     private void absoluteX() {
         pc++;
-        //add byte value in address to X register
-        newAddress = (char) (systembus.accessMemory().readWord((char) (pc)) + Byte.toUnsignedInt(X));
-        System.out.println(Integer.toBinaryString(newAddress));
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(X));
         argumentFetched = systembus.accessMemory().readByte(newAddress);
         // sum of which is the newest Address
         pc++;
     }
-
+    
     // similar to absX but Y
-    private void absoluteY() {
+    private void absoluteY(){
         pc++;
-        newAddress = (char) (systembus.accessMemory().readWord((char) (pc)) + Byte.toUnsignedInt(Y));
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(Y));
+        argumentFetched = systembus.accessMemory().readByte(newAddress);
+        //Y = argumentFetched;
+        
+        pc++;
+    }
+    
+    // instead of reading the argument at the address, a new address is read instead of an argument.
+    // the argument is read at that new address
+    private void indirect(){
+        pc++;
+        newAddress = systembus.accessMemory().readWord(pc);
+        newAddress = systembus.accessMemory().readWord(newAddress);
         argumentFetched = systembus.accessMemory().readByte(newAddress);
         
 
         pc++;
     }
-
-    private void indirect() {
-        // gets next two bytes as transitive address
-        // gets the two bytes at the transitive address as the new Address
-        // reads instruction at newest address
+       
+    private void indirectX(){
+        // similar to indirect, but the value of X register is added as an index to the first address
         pc++;
-        newAddress = systembus.accessMemory().readWord(pc);
-
+        //newAddress = systembus.accessMemory().readWord(pc);
+        newAddress = (char) (systembus.accessMemory().readWord((char)(pc)) + Byte.toUnsignedInt(X));
         newAddress = systembus.accessMemory().readWord(newAddress);
-
         argumentFetched = systembus.accessMemory().readByte(newAddress);
-
-        pc++;
-    }
-
-    private void indirectX() {
-        // similar to indirect - last byte is added to X register 
-        // sum is considered as the last address
-        pc++;
-        System.out.println("pc: " + (int) pc);
-        newAddress = systembus.accessMemory().readWord(pc);
-        System.out.println("new address1: " + Integer.toHexString(newAddress));
-        newAddress = systembus.accessMemory().readWord(newAddress);
-        System.out.println("new address2: " + Integer.toHexString(newAddress));
-        argumentFetched = systembus.accessMemory().readByte((char) (newAddress + Byte.toUnsignedInt(X)));
-        System.out.println("argument fetched: " + Integer.toHexString(argumentFetched));
         pc++;
     }
 
@@ -335,7 +331,8 @@ public class Cpu extends Device implements Clockable {
 
     // add byte at current address to A  register
     private void add() {
-
+        if(flags[0]) //carry flag adds 1 to the addition
+            argumentFetched++;
         ifOverflowed(A, argumentFetched);
         A += argumentFetched;
 
@@ -521,6 +518,7 @@ public class Cpu extends Device implements Clockable {
     // "" "" but if bigger flag not set
     private void bsl() {
 
+        //question if smaller  = is bigger explicitly false?
         if (flags[2] == false) {
             pc = newAddress;
             pc--;
@@ -530,12 +528,12 @@ public class Cpu extends Device implements Clockable {
 
     private void cmp() {//CNBZ
 
-        // compares A to instruction byte
-        System.out.println();
+        /*
+        A equal:B-> FALSE Z-> TRUE
+        A bigger:B-> TRUE Z-> FALSE
+        A smaller:B-> FALSE Z-> FALSE
+        */
         int val = Integer.compare(Byte.toUnsignedInt(A), Byte.toUnsignedInt(argumentFetched));
-
-        // if equal
-        System.out.println("CMP: " + val);
         if (val == 0) {
             flags[3] = true; //zero
             flags[2] = false; // bigger
@@ -721,14 +719,18 @@ public class Cpu extends Device implements Clockable {
     // pull value in stack into A
     public void pla() {
 
-        stackPointer--;
-        stackPointer--;
-
-        char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
-
-        A = systembus.accessMemory().readByte(stackAddress);
-
-        if (A == 0) {
+        
+         stackPointer--;
+         
+         char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
+         
+        
+         
+         A = systembus.accessMemory().readByte(stackAddress);
+        
+          
+        
+        if(A == 0 ){
             flags[3] = true;
         }
 
@@ -737,14 +739,15 @@ public class Cpu extends Device implements Clockable {
     // pull value in stack into X
     public void plx() {
 
-        stackPointer--;
-        stackPointer--;
-
-        char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
-
-        X = systembus.accessMemory().readByte(stackAddress);
-
-        if (X == 0) {
+         stackPointer--;
+         
+         char stackAddress = (char) (stackStart + Byte.toUnsignedInt(stackPointer));
+         
+         X = systembus.accessMemory().readByte(stackAddress);
+         
+          
+        
+        if(X == 0 ){
             flags[3] = true;
         }
     }
@@ -893,7 +896,7 @@ public class Cpu extends Device implements Clockable {
         this.A = 0;
         this.X = 0;
         this.Y = 0;
-        this.pc = 0;
+        this.pc = resertPC;
         this.displayPc = pc;
         this.stackPointer = 0;
 

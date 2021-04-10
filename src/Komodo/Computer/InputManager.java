@@ -38,6 +38,7 @@ public class InputManager {
         scene.setOnKeyPressed(new EventHandler<KeyEvent>(){
             public void handle(KeyEvent key) {
                 latestCode = key.getCode();
+                //System.out.println(latestCode);
             }
         });
         
@@ -55,8 +56,28 @@ public class InputManager {
             @Override
             public void handle(KeyEvent key) {
                 synchronized(keyMap) {
-                keyMap.put(latestCode, (int)key.getCharacter().charAt(0));
+                    if(latestCode != null){
+                        System.out.println(latestCode);
+                        if(latestCode.equals(KeyCode.UP)){
+                            keyMap.put(latestCode, 17);
+                            System.out.println("up key");
+                        }
+                        else
+                        if(latestCode == KeyCode.RIGHT)
+                            keyMap.put(latestCode, 18);
+                        else
+                        if(latestCode == KeyCode.DOWN)
+                            keyMap.put(latestCode, 19);
+                        else
+                        if(latestCode == KeyCode.LEFT)
+                            keyMap.put(latestCode, 20);
+                        else{
+                            keyMap.put(latestCode, (int)key.getCharacter().charAt(0));
+                            //System.out.println((int)key.getCharacter().charAt(0));
+                        }
+                    }
                 }
+                key.consume();
             }
         });
         

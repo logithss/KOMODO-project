@@ -32,7 +32,9 @@ public class SystemBus implements Clockable{
         //clocks
         
         systemClock = new SystemClock("System Clock", this);
+        systemClock.setDaemon(true);
         apuClock = new SystemClock("APU Clock", apu);
+        apuClock.setDaemon(true);
     }
     
     public void run(){
@@ -43,6 +45,7 @@ public class SystemBus implements Clockable{
     {
         on = true;
         reset();
+        this.apu.sid.open();
         this.apuClock.start();
         this.systemClock.haltClock();
         this.systemClock.start();
@@ -51,25 +54,32 @@ public class SystemBus implements Clockable{
     public void powerOff()
     {
         on = false;
+        apu.reset();
         apu.closeApu();
         apuClock.stopClock();
         systemClock.stopClock();
         
         systemClock = new SystemClock("System Clock", this);
+        systemClock.setDaemon(true);
         apuClock = new SystemClock("APU Clock", apu);
+        apuClock.setDaemon(true);
     }
     
     public void reset()
     {
         cpu.reset();
+        apu.reset();
     }
     
     @Override
     public void clock() {
         this.cpu.clock();
+        this.ppu.clock();
         //this.ppu.clock();
-        this.apu.clock();
-        //this.keyboardScanner.clock();
+        //this.ppu.clock();
+        //this.apu.clock();
+        //System.out.println("systembus");
+        this.keyboardScanner.clock();
     }
     
     public Memory accessMemory() {return this.memory;}

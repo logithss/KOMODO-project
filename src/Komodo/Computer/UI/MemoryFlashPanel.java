@@ -7,6 +7,7 @@ package Komodo.Computer.UI;
 
 import Komodo.Assembler.UI.FileItem;
 import Komodo.Computer.Components.Memory;
+import Komodo.Computer.Exceptions.MemoryOutOfBoundException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,8 +69,8 @@ public class MemoryFlashPanel extends VBox{
         
         //2) starting position
         HBox positionBox = new HBox();
-        Label positionLabel = new Label("Starting position: ");
-        positionField = new TextField();
+        Label positionLabel = new Label("Starting position (Hex): ");
+        positionField = new TextField("8000");
         positionBox.getChildren().addAll(positionLabel, positionField);
         
         //3) flash button
@@ -135,8 +136,13 @@ public class MemoryFlashPanel extends VBox{
             return "Information not filled";
         try{
             int position = Integer.parseInt(positionText, 16);
+            System.out.println("number: "+position);
             byte[] data = Files.readAllBytes(Paths.get(file.getPath()));
             this.memory.flashMemory(data, position);
+        }
+        catch(MemoryOutOfBoundException e)
+        {
+            System.out.println("File was too big or position is invalid");
         }
         catch(NumberFormatException e)
         {

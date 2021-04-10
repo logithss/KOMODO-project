@@ -52,7 +52,18 @@ public class Command {
     public Command(String assemblyLine) throws IllegalInstructionException, SyntaxErrorException
     {
         this.assemblyLine = assemblyLine;
-        this.process();
+        //check first if line is a number
+        String split = assemblyLine.trim().split(";")[0];
+        try{
+            byte b = (byte) decodeAssemblyNumber(split);
+            bytecode = new byte[1];
+            this.bytecode[0] = b;
+            System.out.println("a number was detected: "+Integer.toHexString(b));
+        }
+        catch(NumberFormatException e)
+        {
+            this.process();
+        }
     }
 
     /*Method that returns the mnemonic of the command object 
@@ -191,7 +202,7 @@ public class Command {
                     argument = split[1];
                     break;
                 case "y":
-                    adressingMode = Instruction.AddressingMode.ABSOLUTE_X;
+                    adressingMode = Instruction.AddressingMode.ABSOLUTE_Y;
                     bytecode = new byte[3];
                     argument = split[1];
                     break;

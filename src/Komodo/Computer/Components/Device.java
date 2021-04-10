@@ -13,8 +13,15 @@ public abstract class Device{
     
     protected SystemBus systembus;
     
+    protected boolean statusChanged = false;
+    
     public Device(SystemBus systembus)
     {
         this.systembus = systembus;
+    }
+    
+    public void hasStatusChanged()
+    {
+        
     }
 }

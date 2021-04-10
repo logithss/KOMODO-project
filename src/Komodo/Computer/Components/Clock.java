@@ -16,8 +16,10 @@ public abstract class Clock extends Thread implements Runnable{
     public long cycleCount = 0;
     
     public double interupt = 0;
-    private static long timerLast = 0;
-    public double debugDelay = 0;
+    private long timerLast = 0;
+    public long debugDelay = 0;
+    
+    private long timecounter = 0;
     
     public Clock(String name) {
         this.setName(name);
@@ -30,16 +32,25 @@ public abstract class Clock extends Thread implements Runnable{
         
         while(running)
         {
-            if((getTime()-timerLast) >= interupt)
+            timecounter += (getTime()-timerLast);
+            /*System.out.println("stopped: "+(getTime()-timerLast));
+            System.out.println("get: "+getTime());
+            System.out.println("---------");*/
+            if(timecounter >= interupt)
             {
                 if(!halted){
                     interupt = 0;
                     clockCycle();
                     interupt += debugDelay;
-                    timerLast = getTime();
+                    //System.out.println(interupt);
                     cycleCount++;
                 }
+                
+                timecounter = 0;
             }
+            
+            timerLast = getTime();
+            //System.out.println("last: "+timerLast);
         }
     }
     

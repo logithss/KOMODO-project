@@ -20,7 +20,8 @@ import javafx.scene.input.KeyCode;
  */
 public class KeyScanner extends Device implements Clockable{
     
-    private char keybordRegisterStart = 0x20;
+    private char keybordRegisterStart = 0x0000;
+    private byte maxKeyCount = 8;
     
     public KeyScanner(SystemBus systemBus) {
         super(systemBus);
@@ -37,7 +38,7 @@ public class KeyScanner extends Device implements Clockable{
         Iterator<Integer> ite = keys.values().iterator();
         byte count = 0;
         synchronized(keys) {
-            while(ite.hasNext()){
+            while(ite.hasNext() & count < maxKeyCount){
                 systembus.accessMemory().writeByte( (char) (keybordRegisterStart+count+1), ite.next().byteValue());
                 count++;
                 }

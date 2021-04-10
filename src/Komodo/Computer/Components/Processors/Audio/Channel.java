@@ -131,7 +131,7 @@ public class Channel {
                 value = Math.sin(2 * Math.PI * t);
                 break;
             default:
-                if (rng.nextBoolean() == true) {
+                if (rng.nextBoolean() == true && pitch >0) {
                     value = (byte) ((byte) 1);
                 } else {
                     value = 0;
@@ -140,6 +140,10 @@ public class Channel {
         }
 
         i++;
+        
+        if(i > 1000000){
+            i = 0;
+        }
         return value;
 
     }
