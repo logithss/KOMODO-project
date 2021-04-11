@@ -71,50 +71,57 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         
         GridPane controls = new GridPane();
         controls.add(new Label("Start value: "), 0, 0);
-        Spinner memStart = new Spinner(0, 0xfff0, 0, 0x10);
-        memStart.setEditable(true);
-        memStart.setPrefSize(125, 25);
-        
-        HexIntegerStringConverter.createFor(memStart);
-        
-        memStart.valueProperty().addListener((obs, oldValue, newValue) ->{
-            //to remove focus from address spinner
-            grid.requestFocus();
-            //System.out.println("value");
-            //System.out.println(newValue);
-            
-            /*if(newValue != null){
-                int value = (int)newValue;
-                memStart.getValueFactory().setValue(value - value % 16);
-                update( (int)(value - value % 16) );
-            }*/
-        });
-        
-        
-        /*memStart.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-              
-                memStart.getValueFactory().setValue((int)Integer.parseInt(newValue,10));
-            } catch (NumberFormatException e) {
-                memStart.getValueFactory().setValue(80);
-            }
-        });*/
-        
-        
-        memStart.focusedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue ov, Boolean t, Boolean t1) {
-
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (memStart.isFocused()) {
-                            memStart.getEditor().selectAll();
-                        }
-                    }
-                });
+        CustomHexSpinner memStart = new CustomHexSpinner();
+        memStart.value.addListener(new ChangeListener(){
+            @Override public void changed(ObservableValue o,Object oldVal, 
+                     Object newVal){
+                 update((int)newVal);
             }
         });
+//        Spinner memStart = new Spinner(0, 0xfff0, 0, 0x10);
+//        memStart.setEditable(true);
+//        memStart.setPrefSize(125, 25);
+//        
+//        HexIntegerStringConverter.createFor(memStart);
+//        
+//        memStart.valueProperty().addListener((obs, oldValue, newValue) ->{
+//            //to remove focus from address spinner
+//            grid.requestFocus();
+//            //System.out.println("value");
+//            //System.out.println(newValue);
+//            
+//            /*if(newValue != null){
+//                int value = (int)newValue;
+//                memStart.getValueFactory().setValue(value - value % 16);
+//                update( (int)(value - value % 16) );
+//            }*/
+//        });
+//        
+//        
+//        /*memStart.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+//            try {
+//              
+//                memStart.getValueFactory().setValue((int)Integer.parseInt(newValue,10));
+//            } catch (NumberFormatException e) {
+//                memStart.getValueFactory().setValue(80);
+//            }
+//        });*/
+//        
+//        
+//        memStart.focusedProperty().addListener(new ChangeListener<Boolean>() {
+//            @Override
+//            public void changed(ObservableValue ov, Boolean t, Boolean t1) {
+//
+//                Platform.runLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (memStart.isFocused()) {
+//                            memStart.getEditor().selectAll();
+//                        }
+//                    }
+//                });
+//            }
+//        });
         
         //textbox to edit memory value
         editBox = new TextField ();
