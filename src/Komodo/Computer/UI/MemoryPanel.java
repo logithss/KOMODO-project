@@ -82,11 +82,12 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
             grid.requestFocus();
             //System.out.println("value");
             //System.out.println(newValue);
-            if(newValue != null){
+            
+            /*if(newValue != null){
                 int value = (int)newValue;
                 memStart.getValueFactory().setValue(value - value % 16);
                 update( (int)(value - value % 16) );
-            }
+            }*/
         });
         
         

@@ -29,6 +29,21 @@ public class Command {
     @param bytecode: corresponds to the array of machine code that will be put 
                      into the byte file*/
     
+    
+    /*
+        IMPLIED = nothing 
+        IMMIDIATE = #,number
+        ABSOLUTE = only number 
+        ABSOLUTEX = x,number
+        ABSOLUTEY = y,number
+        INDIRECT = !,number
+        INDIRECTX = x!,number
+        
+        DECIMAL = number 
+        HEX = $number 
+        BINARY = %number 
+        */
+    
     private String mnemonic; 
     private String operand; 
     public byte[] bytecode;
@@ -37,7 +52,7 @@ public class Command {
     public int lineNumber;
     private String assemblyLine;
     public boolean needLabel = false;
-    public String labelName = "label2";
+    public String labelName = "";
     
     
 
@@ -58,7 +73,6 @@ public class Command {
             byte b = (byte) decodeAssemblyNumber(split);
             bytecode = new byte[1];
             this.bytecode[0] = b;
-            System.out.println("a number was detected: "+Integer.toHexString(b));
         }
         catch(NumberFormatException e)
         {
@@ -129,7 +143,6 @@ public class Command {
             this.bytecode[0] = (byte) decodeAssemblyNumber(parsedText);
         } else if (parsedText.isEmpty()) {
             /*Possibility that the parsed text is empty*/
-            //System.out.println("Parsed Text is empty");
         } else {
             /*There is a possiblity that the parsed text is still a number without 
             any symbols at the beginning*/
@@ -177,9 +190,6 @@ public class Command {
             /*Cases for how the argument is written. Depending on how its written 
             it will create an array with its corresponding byte code and will parse the 
             number part of it*/
-            System.out.println("//////////");
-            System.out.println(parsedOperand.trim().split(";")[0]);
-            System.out.println(assemblyLine+":::"+split[0]);
             switch(split[0].toLowerCase()){
                 case "!":
                     adressingMode = Instruction.AddressingMode.INDIRECT;
@@ -246,20 +256,18 @@ public class Command {
            if it is the case, then set the labelname to it*/
             if (!argument.isEmpty()) {
                 try {
-                    //System.out.println(argument);
                     int somethingBetter = NumberUtility.decodeAssemblyNumber(argument);
-                } catch (NumberFormatException e) {
-
+                } 
+                catch (NumberFormatException e) {
                     needLabel = true;
                     labelName = argument;
-
                 }
             }
             
             /*Using the newly assigned instruction, we can now fetch the opcode 
             and put it in the first byte*/
             this.bytecode[0] = newInstruction.opcode;
-
+            
             
             /*Once again, using the newly assigned instruction, fetch some information 
             depending on the addresing mode and assign its bytes to corresponding values */
@@ -289,25 +297,6 @@ public class Command {
         }
         
     }
-    
-      /*
-        IMPLIED = nothing 
-        IMMIDIATE = #
-        ABSOLUTE = only number 
-        ABSOLUTEX = x
-        ABSOLUTEY = y
-        INDIRECT = !number
-        INDIRECTX = x!number
-        
-        DECIMAL = normal number 
-        HEX = $number 
-        BINARY = %number 
-        
-        
-        */
-               
- 
-    
 }
     
     

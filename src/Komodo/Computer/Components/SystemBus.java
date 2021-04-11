@@ -86,6 +86,8 @@ public class SystemBus implements Clockable{
     
     public Clock accessSystemClock() {return this.systemClock;}
     
+    public Clock accessApuClock() {return this.apuClock;}
+    
     public Cpu accessCpu() {return this.cpu;}
     public Ppu accessPpu() {return this.ppu;}
     public Apu accessApu() {return this.apu;}

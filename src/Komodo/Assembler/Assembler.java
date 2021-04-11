@@ -75,12 +75,6 @@ public class Assembler {
                 lineCount++;
             }
         }
-        
-        //when all files are processed, give labels to commands that need them
-        /*System.out.println("************STORED LABELS**************");
-        for(String i : labels.keySet())
-            System.out.println("'"+i+"'");*/
-        //System.out.println("************REQUESTED LABELS**************");
             for(Command command : incompleteCommands)
             {
                 //System.out.println("searching label '"+command.labelName+"'");
@@ -93,7 +87,6 @@ public class Assembler {
             }
         
         //commands are now all ready to be written in byte file
-        System.out.println("how many blocks?: "+blocks.size());
         //sort blocks by starting positions
         Collections.sort(blocks);
         
@@ -101,11 +94,8 @@ public class Assembler {
         ArrayList<CommandBlock> blocksToRemove = new ArrayList<>();
         for(CommandBlock block: blocks)
         {
-            System.out.println("BLOCK STARTS AT "+block.startingAddress);
-            System.out.println("this block length is: "+block.byteSize);
             if(block.byteSize==0){
                 blocksToRemove.add(block);
-                System.out.println("block is removed");
             }
         }
         blocks.removeAll(blocksToRemove);
@@ -122,7 +112,6 @@ public class Assembler {
             byteCount = blocks.get(0).byteSize;
         
         byte[] finalByteArray = new byte[byteCount];
-        System.out.println("final size: "+finalByteArray.length);
         
         //merge all instructions into one byte array
         int bytePointer = 0;
@@ -133,23 +122,17 @@ public class Assembler {
         
         for(CommandBlock block : blocks)
         {
-                //System.out.println("block start "+block.startingAddress+", size is "+block.byteSize);
-                //System.out.println("filledPointer: "+filledPointer);
                 //fill array if there are blanks
                 if(block.startingAddress > filledPointer){
-                    System.out.println("FILL: " + bytePointer + " -> "+ (block.startingAddress - blocks.get(0).startingAddress));
                     Arrays.fill(finalByteArray, bytePointer, (block.startingAddress - filledPointer) + bytePointer, blankFillValue);
                     bytePointer += block.startingAddress - filledPointer;
                     filledPointer = block.startingAddress;
                 }
-                //bytePointer = block.startingAddress;
                 //write block instruction into final array
                 byte[] instruction = block.getBytecodeArray();
                 if(instruction.length != 0){
-                    System.out.println("COPY: "+ bytePointer +" SIZE: "+ block.byteSize);
                     System.arraycopy(instruction, 0, finalByteArray, bytePointer, block.byteSize);
                     bytePointer += block.byteSize;
-
                     filledPointer += block.byteSize;
                 }
         }
@@ -162,9 +145,6 @@ public class Assembler {
     
     public void writeToFile(String stringPath, byte[]code) throws IOException
     {
-        //System.out.println("output: ");
-        //for(int i : code)
-            //System.out.println(Integer.toHexString(i));
         Path path = Paths.get(stringPath);
         Files.write(path, code);
     }
@@ -172,7 +152,6 @@ public class Assembler {
     public void interpretLine(String assemblyLine, int line) throws SyntaxErrorException, IllegalInstructionException
     {
         char prefix = assemblyLine.trim().charAt(0);
-        System.out.println("PREFIX: "+prefix);
         Command newCommand = null;
         
         switch(prefix){
@@ -181,8 +160,6 @@ public class Assembler {
                 break;
             case ':':
                 //label, calculate address its pointing to and put in labels map
-                //System.out.println(currentBlock.addressCounter);
-                System.out.println("label:"+assemblyLine.replaceAll("\t", "").substring(1));
                 String correctedLabel = assemblyLine.replaceAll("\t", "").split(";")[0].trim().substring(1).trim();
                 labels.put(correctedLabel, currentBlock.addressCounter);
                 break;
@@ -190,10 +167,7 @@ public class Assembler {
                 //variable, considered almost like a label
                 try{
                     String[] split = assemblyLine.split("="); //split the line using the '=' symbol
-                    //for(String s: split)
-                        //System.out.println(s);
                     String varname = split[0].trim().substring(1);
-                    //System.out.println("varname: "+varname);
                     String argument = split[1].split(";")[0].trim();
                     int value = NumberUtility.decodeAssemblyNumber(argument);
                     labels.put(varname, value);
@@ -226,11 +200,9 @@ public class Assembler {
                     newCommand.lineNumber = line;
                 } catch (IllegalInstructionException ex) {
                     throw ex;
-                    //newCommand = null;
                 }
                 catch (SyntaxErrorException ex) {
                     throw ex;
-                    //newCommand = null;
                 }
             }
                 break;

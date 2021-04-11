@@ -85,13 +85,16 @@ public class HexIntegerStringConverter extends StringConverter<Integer> {
         final EventHandler<ActionEvent> oldHandler = input.getOnAction();
         input.setOnAction(t -> {
             // fromString performs input validation
+            
+            //final int value = fromString(input.getText());
             final int value = fromString(input.getText());
-
+            
             // redundant for Spinner but not harmful
             final int restricted  = Math.min(Math.max(value, min), max);
             /*if (value != restricted)
                 input.setText(Integer.toString(restricted));*/
-
+            
+            
             // required for Spinner which handles onAction
             if (oldHandler != null) oldHandler.handle(t);
         });

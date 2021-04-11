@@ -36,6 +36,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
@@ -97,6 +98,7 @@ public class KomodoMain extends Application {
         rightBox.getChildren().addAll(upperPanelsScroll, clockPanel);
         
         Menu menu1 = new Menu("Computer");
+        
         MenuItem menuItem1 = new MenuItem("Open flash window");
         menuItem1.setOnAction(e -> {
             openMemoryFlashWindow();
@@ -108,12 +110,18 @@ public class KomodoMain extends Application {
         
         MenuItem menuItem3 = new MenuItem("Fullscreen");
         menuItem3.setOnAction(e -> {
-            //rightBox
+            //rightBox is the debug menu box
             rightBox.setVisible(!rightBox.isVisible());
             rightBox.setManaged(!rightBox.isManaged());
         });
         
-        menu1.getItems().addAll(menuItem1, menuItem2, menuItem3);
+        MenuItem menuItem4 = new MenuItem("Exit");
+        menuItem4.setOnAction(e -> {
+            System.out.println("close?");
+            this.closeApplication();
+        });
+        
+        menu1.getItems().addAll(menuItem1, menuItem2, menuItem3, menuItem4);
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().add(menu1);
         
@@ -181,7 +189,7 @@ public class KomodoMain extends Application {
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setAlwaysOnTop(true);
         dialog.setResizable(false);
-        dialog.initStyle(StageStyle.UNIFIED);
+        dialog.initStyle(StageStyle.DECORATED);
         dialog.initOwner(null);
         Scene panel = new Scene(new MemoryFlashPanel(systembus.accessMemory(), window), 400, 200);
         dialog.setScene(panel);
@@ -195,7 +203,7 @@ public class KomodoMain extends Application {
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setAlwaysOnTop(true);
         dialog.setResizable(false);
-        dialog.initStyle(StageStyle.UNIFIED);
+        dialog.initStyle(StageStyle.DECORATED);
         dialog.initOwner(null);
         Scene panel = new Scene(new NumberConverterPanel(window), 400, 200);
         dialog.setScene(panel);
@@ -203,11 +211,13 @@ public class KomodoMain extends Application {
     }
     
     public void closeApplication() {
-        //System.exit(0);
-        //systembus.powerOff();
         anim.stop();
         systembus.powerOff();
-        System.out.println("******* alive?: "+systembus.accessSystemClock().isAlive());
+        boolean stillRunning = true;
+        while(stillRunning)
+        {
+            stillRunning = systembus.accessSystemClock().isAlive() | systembus.accessApuClock().isAlive();
+        }
         window.close();
         System.gc();
         Platform.exit();

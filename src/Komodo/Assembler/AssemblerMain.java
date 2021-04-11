@@ -7,6 +7,7 @@ package Komodo.Assembler;
 
 import Komodo.Assembler.Assembler;
 import Komodo.Assembler.UI.FileItem;
+import Komodo.Assembler.UI.SyntaxHelpPopup;
 import Komodo.Commun.Instruction;
 import Komodo.Commun.NumberUtility;
 import Komodo.Computer.Components.SystemBus;
@@ -35,6 +36,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -47,7 +49,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -74,7 +78,7 @@ public class AssemblerMain extends Application {
         /*for(int i =0; i < 20; i++)
             vbox.getChildren().add(new Label("aaa"));*/
         ScrollPane sp = new ScrollPane();
-        //sp.setPadding(new Insets(100, 100, 10, 0));
+        sp.setTooltip(new Tooltip("Files to assemble (drag & drop)"));
         sp.setContent(fileVBox);
         
         //drag&drop code for files
@@ -86,7 +90,24 @@ public class AssemblerMain extends Application {
                         && event.getDragboard().hasFiles()) {
                     /* allow for both copying and moving, whatever user chooses */
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                    
+                    //add borders when dragging
+                    sp.setStyle("-fx-border-color: red ;\n" +
+                                "    -fx-border-width: 2 ; \n" +
+                                "    -fx-border-style: solid ;");
                 }
+                event.consume();
+            }
+        });
+        
+        sp.setOnDragExited(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                //remove borders when dragging
+                    sp.setStyle("-fx-border-color: red ;\n" +
+                                "    -fx-border-width: 0 ; \n" +
+                                "    -fx-border-style: solid ;");
                 event.consume();
             }
         });
@@ -104,6 +125,10 @@ public class AssemblerMain extends Application {
                     }
                     //dropped.setText(db.getFiles().toString());
                     success = true;
+                    //remove borders when dragging
+                    sp.setStyle("-fx-border-color: red ;\n" +
+                                "    -fx-border-width: 0 ; \n" +
+                                "    -fx-border-style: solid ;");
                 }
                 /* let the source know whether the string was successfully 
                  * transferred and used */
@@ -121,10 +146,12 @@ public class AssemblerMain extends Application {
         fileChooser.setTitle("Select file");
         
         Button newFileButton = new Button("Add file");
+        newFileButton.setTooltip(new Tooltip("Add files to assemble"));
         newFileButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(final ActionEvent e) {
+                    fileChooser.setTitle("Select file");
                     List <File> files = fileChooser.showOpenMultipleDialog(primaryStage);
                     if(files != null && files.size() >0){
                         for(File file : files){
@@ -134,7 +161,8 @@ public class AssemblerMain extends Application {
                 }
             });
         
-        Button assembleButton = new Button("Assemble files");
+        Button assembleButton = new Button("Assemble file");
+        assembleButton.setTooltip(new Tooltip("Assemble file"));
         assembleButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
@@ -144,11 +172,12 @@ public class AssemblerMain extends Application {
             });
         
         Button helpButton = new Button("?");
+        helpButton.setTooltip(new Tooltip("Open help menu"));
         helpButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(final ActionEvent e) {
-                    System.out.println("HEEEELLLPPP!!!");
+                    openHelpPopup();
                 }
             });
         
@@ -161,7 +190,7 @@ public class AssemblerMain extends Application {
         buttonBox.getChildren().addAll(newFileButton, assembleButton, helpButton);
         VBox topBox = new VBox();
         topBox.setSpacing(5);
-        topBox.getChildren().addAll(buttonBox);
+        topBox.getChildren().addAll(buttonBox, new Label("Files to assemble: "));
         root.setTop(topBox);
         
         //console
@@ -172,6 +201,7 @@ public class AssemblerMain extends Application {
         
         
         Button outputButton = new Button("Set output path");
+        outputButton.setTooltip(new Tooltip("Specify the output path"));
         outputButton.setOnAction(
             new EventHandler<ActionEvent>() {
                 @Override
@@ -184,6 +214,7 @@ public class AssemblerMain extends Application {
         HBox outputBox = new HBox();
         outputBox.setSpacing(5);
         outputBox.getChildren().addAll(outputLabel, outputButton);
+        outputBox.setPadding(new Insets(5,5,5,5));
         
         
         //drag&drop code for output
@@ -195,7 +226,24 @@ public class AssemblerMain extends Application {
                         && event.getDragboard().hasFiles()) {
                     /* allow for both copying and moving, whatever user chooses */
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                    
+                    //add borders when dragging
+                    outputBox.setStyle("-fx-border-color: red ;\n" +
+                                "    -fx-border-width: 2 ; \n" +
+                                "    -fx-border-style: solid ;");
                 }
+                event.consume();
+            }
+        });
+        
+        outputBox.setOnDragExited(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                //remove borders when dragging
+                    outputBox.setStyle("-fx-border-color: red ;\n" +
+                                "    -fx-border-width: 0 ; \n" +
+                                "    -fx-border-style: solid ;");
                 event.consume();
             }
         });
@@ -211,6 +259,11 @@ public class AssemblerMain extends Application {
                     outputLabel.setText(""+outputPath);
                     //dropped.setText(db.getFiles().toString());
                     success = true;
+                    
+                    //remove borders when dragging
+                    outputBox.setStyle("-fx-border-color: red ;\n" +
+                                "    -fx-border-width: 0 ; \n" +
+                                "    -fx-border-style: solid ;");
                 }
                 /* let the source know whether the string was successfully 
                  * transferred and used */
@@ -238,6 +291,7 @@ public class AssemblerMain extends Application {
     {
         FileItem fileItem = new FileItem(file);
         Button removeButton = new Button("X");
+        removeButton.setTooltip(new Tooltip("Remove file"));
         removeButton.setOnAction(
         new EventHandler<ActionEvent>() {
             @Override
@@ -246,6 +300,7 @@ public class AssemblerMain extends Application {
             }
         });
         fileItem.getChildren().add(removeButton);
+        fileVBox.getChildren().clear();
         fileVBox.getChildren().addAll(fileItem);
     }
     
@@ -284,6 +339,7 @@ public class AssemblerMain extends Application {
     
     private void setOutputPath()
     {
+        fileChooser.setTitle("Select output path");
         File file = fileChooser.showOpenDialog(window);
         if(file != null)
         {
@@ -299,6 +355,20 @@ public class AssemblerMain extends Application {
         else
             console.setText(line);
         console.setScrollTop(1000000000);
+    }
+    
+    private void openHelpPopup()
+    {
+        final Stage dialog = new Stage();
+        dialog.setTitle("Help");
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.setAlwaysOnTop(true);
+        dialog.setResizable(true);
+        dialog.initStyle(StageStyle.DECORATED);
+        dialog.initOwner(window);
+        Scene panel = new Scene(new SyntaxHelpPopup(window), 600, 250);
+        dialog.setScene(panel);
+        dialog.show();
     }
     
 
