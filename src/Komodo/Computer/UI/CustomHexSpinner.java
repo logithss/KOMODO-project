@@ -21,6 +21,7 @@ import javafx.scene.layout.VBox;
 public class CustomHexSpinner extends HBox{
     
     public IntegerProperty value;
+    private int lastValidValue = 0;
     private Button incButton;
     private Button decButton;
     private TextField textfield;
@@ -29,7 +30,22 @@ public class CustomHexSpinner extends HBox{
         
         value = new SimpleIntegerProperty();
         value.set(0);
+        
+        textfield = new TextField("0");
+        textfield.setMaxHeight(5);
+        //select text when focused on textField
+        textfield.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue.booleanValue() == true)
+                textfield.selectAll();
+        });
+        textfield.textProperty().addListener((observable, oldValue, newValue) -> {
+            if ((textfield.getText() != null && !textfield.getText().isEmpty())) {
+                value.set(verifyValue(newValue, oldValue));
+            }
+        });
+        
         incButton = new Button("^");
+        incButton.setMaxHeight(5);
         incButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override 
             public void handle(ActionEvent e) {
@@ -38,6 +54,7 @@ public class CustomHexSpinner extends HBox{
         });
         
         decButton = new Button("v");
+        decButton.setMaxHeight(5);
         decButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override 
             public void handle(ActionEvent e) {
@@ -48,15 +65,11 @@ public class CustomHexSpinner extends HBox{
             }
         });
         
-        textfield = new TextField("0");
-        textfield.textProperty().addListener((observable, oldValue, newValue) -> {
-            value.set(verifyValue(newValue, oldValue));
-        });
-        
         VBox vbox = new VBox();
         vbox.getChildren().addAll(incButton, decButton);
         
         this.getChildren().addAll(textfield, vbox);
+        //this.setMaxHeight(textfield.getMaxHeight());
         
     }
     
@@ -66,7 +79,6 @@ public class CustomHexSpinner extends HBox{
         try
         {
             int newValue = Integer.parseInt(value, 16);
-            System.out.println("new value: "+newValue);
 
             if(newValue > 0xffff)
                 newValue = 0xffff;
@@ -75,12 +87,13 @@ public class CustomHexSpinner extends HBox{
 
 
             newValue -= newValue %16;
-
+            
+            lastValidValue = newValue;
             return newValue;
         }
         catch(NumberFormatException e)
         {
-            return Integer.parseInt(oldValue, 16);
+            return lastValidValue;
         }
     }
     

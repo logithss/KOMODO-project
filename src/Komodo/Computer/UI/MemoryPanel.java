@@ -18,6 +18,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -65,12 +66,16 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         this.labelArray = new AddressLabel[byteCount][lineCount];
         this.addressArray = new Label[lineCount];
         byteValueLabel = new Label();
+        byteValueLabel.setTooltip(new Tooltip("Decimal value of selected memory cell"));
         wordValueLabel = new Label();
+        wordValueLabel.setTooltip(new Tooltip("Decimal value formed by selected memory cell and the next one"));
         construct();
         update();
         
         GridPane controls = new GridPane();
-        controls.add(new Label("Start value: "), 0, 0);
+        Label address = new Label("View at address: ");
+        address.setTooltip(new Tooltip("Starting address of the memory view (only hex)"));
+        controls.add(address, 0, 0);
         CustomHexSpinner memStart = new CustomHexSpinner();
         memStart.value.addListener(new ChangeListener(){
             @Override public void changed(ObservableValue o,Object oldVal, 
@@ -125,6 +130,7 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         
         //textbox to edit memory value
         editBox = new TextField ();
+        editBox.setTooltip(new Tooltip("Edit the memory cell selected (only hex)"));
         editBox.setPrefWidth(50);
         editBox.setOnAction(new EventHandler<ActionEvent>() {
         @Override
@@ -169,13 +175,21 @@ public class MemoryPanel extends TitlePanel implements UIPanel{
         
         controls.add(memStart, 1, 0);
         controls.add(new Label("    "), 2, 0);
-        controls.add(new Label("Edit: "), 3, 0);
+        Label edit = new Label("Edit: ");
+        edit.setTooltip(new Tooltip("Edit the memory cell selected (only hex)"));
+        controls.add(edit, 3, 0);
         controls.add(editBox, 4, 0);
-        //controls.setPadding(new Insets(0, 0, 0, 0));
-        controls.add(new Label("Byte value: "), 0, 1);
+        
+        
+        Label byteValue = new Label("Byte value: ");
+        byteValue.setTooltip(new Tooltip("Decimal value of selected memory cell"));
+        controls.add(byteValue, 0, 1);
         controls.add(byteValueLabel, 1, 1);
+        
         controls.add(new Label("    "), 2, 1);
-        controls.add(new Label("Word value: "), 3, 1);
+        Label wordValue = new Label("Byte value: ");
+        wordValue.setTooltip(new Tooltip("Decimal value formed by selected memory cell and the next one"));
+        controls.add(wordValue, 3, 1);
         controls.add(wordValueLabel, 4, 1);
         
         Separator separator = new Separator();

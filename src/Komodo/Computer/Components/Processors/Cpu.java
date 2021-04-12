@@ -891,6 +891,12 @@ public class Cpu extends Device implements Clockable {
             flags[index] = value;
         }
     }
+    
+    public void toggleFlag(int index) {
+        if (index < flags.length) {
+            flags[index] = !flags[index];
+        }
+    }
 
     public void reset() {
         this.A = 0;

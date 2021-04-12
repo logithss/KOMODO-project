@@ -16,6 +16,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -36,6 +37,7 @@ public class DisassemblerPanel extends TitlePanel implements UIPanel{
     
     public DisassemblerPanel(String title, Cpu cpu, Memory memory) {
         super(title);
+        this.titleLabel.setTooltip(new Tooltip("List of dissasembled instrcution,\nstarting at address of PC"));
         this.cpu = cpu;
         this.memory = memory;
         instructionHandler = new ListViewHandeler(memory, (char)0, (char) 0xffff, (char) listSize*3, 0);

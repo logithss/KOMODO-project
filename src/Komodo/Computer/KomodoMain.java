@@ -166,10 +166,12 @@ public class KomodoMain extends Application {
             closeApplication();
         });
         
-        //String styleSheet = ResourceLoader.loadStyleFile("C:\\Users\\child\\Documents\\NetBeansProjects\\JavaFXApplication7\\resources\\stylesheets");
-        //if(styleSheet != null)
-        //    scene.getStylesheets().add("\\resources\\stylesheets");
-        //scene.getStylesheets().add("style.css");
+        String styleSheet = ResourceLoader.loadStyleFile("C:\\Users\\child\\Documents\\NetBeansProjects\\JavaFXApplication7\\resources\\stylesheets");
+        /*if(styleSheet != null)
+            scene.getStylesheets().add("\\resources\\stylesheets");
+        scene.getStylesheets().add("style.css");*/
+        
+        //scene.getStyleSheets().add("dark-theme.css");
         
         //initiate input manager
         InputManager.init(renderCanvas); //input is only reported if the canvas is focused

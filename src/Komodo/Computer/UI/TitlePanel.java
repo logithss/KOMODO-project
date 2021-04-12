@@ -19,10 +19,11 @@ import javafx.scene.layout.StackPane;
 public class TitlePanel extends StackPane{
     
     private HBox titleBox;
+    protected Label titleLabel;
     
     public TitlePanel(String title)
     {
-        Label titleLabel = new Label(title);
+        titleLabel = new Label(title);
         titleLabel.setPadding(new Insets(0, 2, 0, 2));
         titleLabel.setStyle("-fx-background-color: #f4f4f4;-fx-font: 16 arial;");
         titleLabel.setOnMouseClicked((mouseEvent) -> {

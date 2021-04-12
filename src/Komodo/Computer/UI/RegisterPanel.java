@@ -11,10 +11,14 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -28,7 +32,7 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
     
     private Cpu cpu;
     
-    private Label[] registerValues; //PC A X Y STACK
+    private TextField[] registerValues; //PC A X Y STACK
     private Label[] flagValues; //C N B Z
     
     private ObservableList<Label> stackItems;
@@ -54,21 +58,128 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         //statsBox.getChildren().addAll(labelPC, labelA, labelX, labelY, stackPointer, flagBox);
         
         String[] registerNames = {"PC", "A", "X", "Y", "STACK*"};
+        String[] tooltipRegisterNames = {"Program counter", 
+            "A register, where to perform arithmetic", 
+            "X register", 
+            "Y register", 
+            "Stack pointer"};
         for(int n = 0; n< 5; n++)
         {
             Label nameLabel = new Label(registerNames[n]);
+            Tooltip toolTip = new Tooltip(tooltipRegisterNames[n]);
+            nameLabel.setTooltip(toolTip);
             nameLabel.setStyle("-fx-font: 24 arial;");
             statsBox.add(nameLabel, 0, n);
         }
         
-        registerValues = new Label[5];
+        registerValues = new TextField[5];
         for(int n = 0; n< 5; n++)
         {
-            Label valueLabel = new Label("");
-            valueLabel.setStyle("-fx-font: 24 arial;");
-            registerValues[n]= valueLabel;
+            TextField editBox = new TextField("");
+            editBox.setStyle("-fx-font: 24 arial;");
+            editBox.setEditable(true);
+            editBox.setMaxWidth(150);
+            registerValues[n]= editBox;
             statsBox.add(registerValues[n], 2, n);
         }
+        
+        //get reference to parent node
+        RegisterPanel r = this;
+        registerValues[0].setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+                public void handle(ActionEvent e) {
+                    if ((registerValues[0].getText() != null && !registerValues[0].getText().isEmpty())) {
+                        try{
+                            char value = (char) Integer.parseInt(registerValues[0].getText(), 16);
+                            
+                            cpu.setPC(value);
+                            //unfocus this textbox
+                            r.requestFocus();
+                        }
+                        catch(NumberFormatException ex)
+                        {
+                            registerValues[0].setText(Integer.toHexString(cpu.getPC()));
+                        }
+                    }
+                }
+             });
+        
+        registerValues[1].setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+                public void handle(ActionEvent e) {
+                    if ((registerValues[1].getText() != null && !registerValues[1].getText().isEmpty())) {
+                        try{
+                            byte value = (byte) Integer.parseInt(registerValues[1].getText(), 16);
+                            
+                            cpu.setA(value);
+                            
+                            //unfocus this textbox
+                            r.requestFocus();
+                        }
+                        catch(NumberFormatException ex)
+                        {
+                            registerValues[1].setText(Integer.toHexString(cpu.getA()));
+                        }
+                    }
+                }
+             });
+        registerValues[2].setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+                public void handle(ActionEvent e) {
+                    if ((registerValues[2].getText() != null && !registerValues[2].getText().isEmpty())) {
+                        try{
+                            byte value = (byte) Integer.parseInt(registerValues[2].getText(), 16);
+                            
+                            cpu.setX(value);
+                            
+                            //unfocus this textbox
+                            r.requestFocus();
+                        }
+                        catch(NumberFormatException ex)
+                        {
+                            registerValues[2].setText(Integer.toHexString(cpu.getX()));
+                        }
+                    }
+                }
+             });
+        registerValues[3].setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+                public void handle(ActionEvent e) {
+                    if ((registerValues[3].getText() != null && !registerValues[3].getText().isEmpty())) {
+                        try{
+                            byte value = (byte) Integer.parseInt(registerValues[3].getText(), 16);
+                            
+                            cpu.setY(value);
+                            
+                            //unfocus this textbox
+                            r.requestFocus();
+                        }
+                        catch(NumberFormatException ex)
+                        {
+                            registerValues[3].setText(Integer.toHexString(cpu.getY()));
+                        }
+                    }
+                }
+             });
+        registerValues[4].setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+                public void handle(ActionEvent e) {
+                    if ((registerValues[4].getText() != null && !registerValues[4].getText().isEmpty())) {
+                        try{
+                            byte value = (byte) Integer.parseInt(registerValues[4].getText(), 16);
+                            
+                            cpu.setStackPointer(value);
+                            
+                            //unfocus this textbox
+                            r.requestFocus();
+                        }
+                        catch(NumberFormatException ex)
+                        {
+                            registerValues[4].setText(Integer.toHexString(cpu.getStackPointer()));
+                        }
+                    }
+                }
+             });
         
         for(int n = 0; n< 5; n++)
         {
@@ -91,10 +202,16 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         flagValues[2].setStyle("-fx-font: 24 arial;");
         flagValues[3] = new Label("Z");
         flagValues[3].setStyle("-fx-font: 24 arial;");
-        for(int i = 0; i <4; i++)
+        for(int i = 0; i <4; i++){
+            final int n = i;
+            flagValues[i].setOnMouseClicked((mouseEvent) -> {
+                cpu.toggleFlag(n);
+            });
             flagBox.getChildren().add(flagValues[i]);
+        }
         
         Label statusLabel = new Label("STATUS");
+        statusLabel.setTooltip(new Tooltip("Status flags: \nClear, \nNegatif, \nBigger, \nZero"));
         statusLabel.setStyle("-fx-font: 24 arial;");
         statsBox.add(statusLabel, 0, 5);
         statsBox.add(flagBox, 2, 5);
@@ -141,8 +258,9 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
             Label ins = new Label("         ");
             stackList.add(ins, 1, i);
         }
-        
+        Tooltip stackTooltip = new Tooltip("Values stored in stack\nStack starts at 0x0100");
         ListView stackView = new ListView();
+        stackView.setTooltip(stackTooltip);
         //stackView.setPrefWidth(100);
         stackView.setPrefHeight(150);
         //stackView.setMouseTransparent( true );
@@ -157,7 +275,8 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
         }
         stackView.setItems(stackItems);
         
-        Label stackTitle = new Label("STACK");
+        Label stackTitle = new Label("STACK LIST");
+        stackTitle.setTooltip(stackTooltip);
         stackTitle.setStyle("-fx-font: 24 arial;");
         
         VBox stackBox = new VBox();
@@ -172,11 +291,11 @@ public class RegisterPanel extends TitlePanel implements UIPanel{
     @Override
     public void update() {
         //update register values //PC A X Y STACK
-        registerValues[0].setText(Integer.toHexString(cpu.getPC()));
-        registerValues[1].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getA())));
-        registerValues[2].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getX())));
-        registerValues[3].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getY())));
-        registerValues[4].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getStackPointer())));
+        if(!registerValues[0].isFocused()) registerValues[0].setText(Integer.toHexString(cpu.getPC()));
+        if(!registerValues[1].isFocused()) registerValues[1].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getA())));
+        if(!registerValues[2].isFocused()) registerValues[2].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getX())));
+        if(!registerValues[3].isFocused()) registerValues[3].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getY())));
+        if(!registerValues[4].isFocused()) registerValues[4].setText(String.format("%02X",Byte.toUnsignedInt(cpu.getStackPointer())));
         
         //update status flags //C N B Z
         boolean[] flags = cpu.getFlags();

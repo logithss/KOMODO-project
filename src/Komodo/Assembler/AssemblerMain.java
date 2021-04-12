@@ -75,8 +75,6 @@ public class AssemblerMain extends Application {
         window = primaryStage;
         
         fileVBox = new VBox();
-        /*for(int i =0; i < 20; i++)
-            vbox.getChildren().add(new Label("aaa"));*/
         ScrollPane sp = new ScrollPane();
         sp.setTooltip(new Tooltip("Files to assemble (drag & drop)"));
         sp.setContent(fileVBox);
